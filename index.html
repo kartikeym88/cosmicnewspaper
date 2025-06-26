@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>The Cosmic Times</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Merriweather&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="newspaper">
+    <h1 id="masthead">📰 The Cosmic Times</h1>
+    <button id="printBtn">🖨️ Print Edition (PDF)</button>
+    <input type="date" id="datePicker" />
+    <h2 id="editionDate">Edition: </h2>
+
+    <section id="headline">
+      <h2>🌌 Front Page: APOD</h2>
+      <div id="apodSection"></div>
+    </section>
+
+    <section id="launchNews">
+      <h2>🚀 Launch Reports</h2>
+      <div id="launchSection">
+  <p>🔄 Awaiting launch data...</p>
+</div>
+
+    </section>
+
+    <section id="spaceHistory">
+      <h2>📚 On This Day in Space</h2>
+      <div id="wikiSection">Coming soon...</div>
+    </section>
+
+    <section id="editorNote">
+      <h2>🧑‍🚀 Editor’s Note</h2>
+      <p id="streak">Visit streak: 0 days</p>
+      <ul id="badgeList"></ul>
+    </section>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
+<section id="archiveSection">
+  <h2>🗂️ My Cosmic Archive</h2>
+  <button id="saveEditionBtn">💾 Save This Edition</button>
+  <ul id="savedEditions"></ul>
+</section>

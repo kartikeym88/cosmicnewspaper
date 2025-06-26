@@ -1,0 +1,106 @@
+body {
+  margin: 0;
+  padding: 0;
+  background: #fdf6e3;
+  font-family: 'Merriweather', serif;
+}
+
+#newspaper {
+  max-width: 800px;
+  margin: auto;
+  padding: 20px;
+  background: #fff;
+  box-shadow: 0 0 10px #ccc;
+  border-radius: 10px;
+}
+
+#masthead {
+  text-align: center;
+  font-size: 3em;
+  border-bottom: 3px solid #333;
+  margin-bottom: 10px;
+}
+
+input[type="date"] {
+  display: block;
+  margin: 10px auto 20px;
+  padding: 6px;
+  font-size: 16px;
+}
+
+section {
+  border-top: 1px dashed #aaa;
+  margin-top: 20px;
+  padding-top: 10px;
+}
+
+h2 {
+  margin-bottom: 10px;
+}
+.launch-card {
+  padding: 10px;
+  margin-bottom: 12px;
+  background: #f5f5f5;
+  border-left: 4px solid #222;
+  border-radius: 4px;
+}
+.wiki-card {
+  padding: 8px;
+  background: #f2f2f2;
+  margin-bottom: 10px;
+  border-left: 4px solid #444;
+  border-radius: 4px;
+}
+#badgeList {
+  list-style-type: none;
+  padding: 0;
+  margin-top: 8px;
+}
+
+#badgeList li {
+  background: #dff0d8;
+  padding: 5px 10px;
+  margin: 4px 0;
+  border-radius: 5px;
+  font-weight: bold;
+}
+#printBtn {
+  display: block;
+  margin: 10px auto 20px;
+  background: #333;
+  color: white;
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+}
+
+#printBtn:hover {
+  background: #555;
+}
+#archiveSection {
+  margin-top: 30px;
+  border-top: 1px solid #999;
+  padding-top: 15px;
+}
+
+#saveEditionBtn {
+  padding: 8px 16px;
+  background-color: #004466;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  cursor: pointer;
+}
+
+#savedEditions li {
+  margin: 5px 0;
+  padding: 6px;
+  background: #e9f5ff;
+  border-left: 4px solid #004466;
+  border-radius: 4px;
+  font-family: monospace;
+  cursor: pointer;
+}
