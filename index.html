@@ -4,42 +4,32 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>The Cosmic Times</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Crimson+Text:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
   <link rel="stylesheet" href="style.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Merriweather&display=swap" rel="stylesheet">
 </head>
 <body>
-  <div id="newspaper">
-    <h1 id="masthead">📰 The Cosmic Times</h1>
-    <input type="date" id="datePicker" />
-    <h2 id="editionDate">Edition: </h2>
+  <div class="newspaper">
+    <header class="masthead">
+      <h1 class="newspaper-title">THE COSMIC TIMES</h1>
+      <p class="tagline">Your Daily Window to the Universe</p>
+      <div class="date-selector">
+        <label for="date-input" style="color: rgba(255,255,255,0.9);">Select Date:</label>
+        <input type="date" id="date-input" class="date-input"  />
+        <button class="fetch-btn" onclick="fetchCosmicNews()">
+          <i class="fas fa-rocket"></i> Launch Edition
+        </button>
+      </div>
+    </header>
 
-    <section id="headline">
-      <h2>🌌 Front Page: APOD</h2>
-      <div id="apodSection"></div>
-    </section>
-
-    <section id="launchNews">
-      <h2>🚀 Launch Reports</h2>
-      <div id="launchSection">
-  <p>🔄 Awaiting launch data...</p>
-</div>
-
-    </section>
-
-    <section id="spaceHistory">
-      <h2>📚 On This Day in Space</h2>
-      <div id="wikiSection">Coming soon...</div>
-    </section>
-
-    <section id="editorNote">
-      <h2>🧑‍🚀 Editor’s Note</h2>
-      <p id="streak">Visit streak: 0 days</p>
-      <ul id="badgeList"></ul>
-    </section>
+    <main class="content" id="main-content">
+      <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <p>Scanning the cosmos for today's stories...</p>
+      </div>
+    </main>
   </div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
-
