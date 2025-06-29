@@ -1,201 +1,160 @@
-const apodSection = document.getElementById("apodSection");
-const datePicker = document.getElementById("datePicker");
-const editionDate = document.getElementById("editionDate");
+const API_KEY = "bT8GecFG6RdFe2ywdkafe1wMsMwmoXNcyMGi5CqO"; // Replace with your NASA key
+const launchAPI = "https://ll.thespacedevs.com/2.2.0/launch/";
 
-const API_KEY = "DEMO_KEY"; // Replace with your NASA API key
-
-datePicker.addEventListener("change", () => {
-  const selectedDate = datePicker.value;
-  editionDate.textContent = `Edition: ${selectedDate}`;
-  fetchAPOD(selectedDate);
+document.addEventListener("DOMContentLoaded", () => {
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('date-input').value = today;
+  fetchCosmicNews();
 });
 
-function fetchAPOD(date) {
-  fetch(`https://api.nasa.gov/planetary/apod?date=${date}&api_key=${API_KEY}`)
-    .then(res => res.json())
-    .then(data => {
-      apodSection.innerHTML = `
-        <h3>${data.title}</h3>
-        ${data.media_type === "image"
-          ? `<img src="${data.url}" alt="${data.title}" width="100%" />`
-          : `<iframe width="100%" height="400" src="${data.url}" frameborder="0"></iframe>`
+document.getElementById("date-input").addEventListener("keypress", (e) => {
+  if (e.key === "Enter") fetchCosmicNews();
+});
+
+async function fetchCosmicNews() {
+  const date = document.getElementById("date-input").value;
+  const mainContent = document.getElementById("main-content");
+
+  mainContent.innerHTML = `
+    <div class="loading">
+      <div class="spinner"></div>
+      <p>Scanning the cosmos for stories from ${formatDate(date)}...</p>
+    </div>
+  `;
+
+  try {
+    const [apod, launches, history] = await Promise.all([
+      fetchAPOD(date),
+      fetchLaunches(date),
+      fetchSpaceHistory(date),
+    ]);
+    renderNewspaper(apod, launches, history, date);
+  } catch (error) {
+    console.error(error);
+    mainContent.innerHTML = `
+      <div class="error">
+        <h3><i class="fas fa-exclamation-triangle"></i> Cosmic Communication Error</h3>
+        <p>Could not fetch data. Please try again later.</p>
+      </div>
+    `;
+  }
+}
+
+function formatDate(dateStr) {
+  return new Date(dateStr).toLocaleDateString("en-US", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+}
+
+async function fetchAPOD(date) {
+  const cached = localStorage.getItem("apod-" + date);
+  if (cached) return JSON.parse(cached);
+
+  const response = await fetch(
+    `https://api.nasa.gov/planetary/apod?date=${date}&api_key=${API_KEY}`
+  );
+  if (!response.ok) throw new Error("Failed to fetch APOD");
+
+  const data = await response.json();
+  localStorage.setItem("apod-" + date, JSON.stringify(data));
+  return data;
+}
+
+async function fetchLaunches(date) {
+  const response = await fetch(
+    `${launchAPI}?window_start__date=${date}&window_end__date=${date}&limit=5`
+  );
+  if (!response.ok) throw new Error("Failed to fetch launches");
+  const data = await response.json();
+  return data.results;
+}
+
+async function fetchSpaceHistory(date) {
+  const month = new Date(date).getMonth() + 1;
+  const day = new Date(date).getDate();
+
+  const response = await fetch(`https://en.wikipedia.org/api/rest_v1/feed/onthisday/events/${month}/${day}`);
+  if (!response.ok) throw new Error("Failed to fetch history");
+
+  const data = await response.json();
+  return data.events.filter(event =>
+    ["space", "apollo", "nasa", "launch", "moon", "cosmos", "satellite"]
+      .some(keyword => event.text.toLowerCase().includes(keyword))
+  );
+}
+
+function renderNewspaper(apod, launches, history, date) {
+  const formattedDate = formatDate(date);
+  const mainContent = document.getElementById("main-content");
+
+  mainContent.innerHTML = `
+    <div class="main-content">
+      <article class="headline-section visible">
+        ${apod.media_type === "image"
+          ? `<img src="${apod.url}" alt="${apod.title}" class="apod-image" />`
+          : `<div class="apod-image" style="display:flex;justify-content:center;align-items:center;background:#222;color:#fff;height:300px;">Video: <a href="${apod.url}" style="color:#0f0;">View</a></div>`
         }
-        <p>${data.explanation}</p>
-        <small>📅 Date: ${data.date} | 📷 Credit: ${data.copyright || "NASA"}</small>
-      `;
-    })
-    .catch(err => {
-      apodSection.innerHTML = `<p>🚫 Failed to load APOD.</p>`;
-    });
-}
-const launchSection = document.getElementById("launchSection");
+        <h2 class="headline">${apod.title}</h2>
+        <p class="byline">
+          <i class="fas fa-calendar-alt"></i> ${formattedDate} |
+          <i class="fas fa-camera"></i> NASA Astronomy Picture of the Day
+          ${apod?.copyright ? `| © ${apod?.copyright}` : ""}
+        </p>
+        <div class="article-content">${apod.explanation}</div>
+      </article>
+    </div>
 
-datePicker.addEventListener("change", () => {
-  const selectedDate = datePicker.value;
-  editionDate.textContent = `Edition: ${selectedDate}`;
-  fetchAPOD(selectedDate);
-  fetchLaunches(selectedDate);
-});
-
-function fetchLaunches(date) {
-  launchSection.innerHTML = "🔄 Fetching launch data...";
-
-  const url = `https://ll.thespacedevs.com/2.2.0/launch/?window_start__date=${date}&window_end__date=${date}`;
-
-  fetch(url)
-    .then(res => res.json())
-    .then(data => {
-      const launches = data.results;
-
-      if (launches.length === 0) {
-        launchSection.innerHTML = `<p>📭 No launches recorded on this day.</p>`;
-        return;
-      }
-
-      launchSection.innerHTML = launches.map(launch => `
-        <div class="launch-card">
-          <h3>🚀 ${launch.name}</h3>
-          <p><strong>Agency:</strong> ${launch.launch_service_provider?.name || "Unknown"}</p>
-          <p><strong>Status:</strong> ${launch.status?.name}</p>
-          <p><strong>Location:</strong> ${launch.pad?.location?.name}</p>
-          <p><strong>Time:</strong> ${new Date(launch.window_start).toLocaleTimeString()}</p>
+    <aside class="sidebar">
+      <section class="section stats-section">
+        <h3 class="section-title"><i class="fas fa-chart-bar"></i> Cosmic Stats</h3>
+        <div class="stats-grid">
+          <div class="stat-item"><span class="stat-number">${launches.length}</span> Launches</div>
+          <div class="stat-item"><span class="stat-number">${history.length}</span> Historic Events</div>
         </div>
-      `).join('');
-    })
-    .catch(err => {
-      launchSection.innerHTML = `<p>🚫 Could not fetch launch data.</p>`;
-    });
+      </section>
+
+      ${launches.length ? `
+        <section class="section">
+          <h3 class="section-title"><i class="fas fa-rocket"></i> Launch Reports</h3>
+          ${launches.map(launch => `
+            <div class="launch-item">
+              <div class="launch-name">${launch.name}</div>
+              <div class="launch-details">
+                <i class="fas fa-building"></i> ${launch.launch_service_provider?.name || "Unknown"}<br>
+                <i class="fas fa-map-marker-alt"></i> ${launch.pad?.location?.name || "Unknown Location"}<br>
+                <i class="fas fa-clock"></i> ${launch.status?.name || "Unknown"}
+              </div>
+            </div>
+          `).join("")}
+        </section>
+      ` : ""}
+
+      ${history.length ? `
+        <section class="section">
+          <h3 class="section-title"><i class="fas fa-history"></i> On This Day in Space</h3>
+          ${history.map(event => `
+            <div class="history-item">
+              <div class="history-title">${event.year} - ${event.text}</div>
+              <div class="history-details"><i class="fas fa-calendar"></i> ${event.year}</div>
+            </div>
+          `).join("")}
+        </section>
+      ` : ""}
+
+      <section class="section badges-section">
+        <h3 class="section-title">
+          <i class="fas fa-medal"></i> Space Explorer Status
+        </h3>
+        <div class="badge">🚀 First Edition</div>
+        <div class="badge">🌟 Cosmic Curious</div>
+        <div class="badge">📅 Time Traveler</div>
+        <p style="margin-top: 15px; opacity: 0.8;">
+          Keep exploring to unlock more badges and build your cosmic archive!
+        </p>
+      </section>
+    </aside>
+  `;
 }
-const wikiSection = document.getElementById("wikiSection");
-
-datePicker.addEventListener("change", () => {
-  const selectedDate = datePicker.value;
-  editionDate.textContent = `Edition: ${selectedDate}`;
-  fetchAPOD(selectedDate);
-  fetchLaunches(selectedDate);
-  fetchWikiEvents(selectedDate);
-});
-function fetchWikiEvents(date) {
-  wikiSection.innerHTML = "🔄 Loading history...";
-
-  const [year, month, day] = date.split("-");
-  const wikiURL = `https://en.wikipedia.org/api/rest_v1/feed/onthisday/events/${month}/${day}`;
-
-  fetch(wikiURL)
-    .then(res => res.json())
-    .then(data => {
-      const allEvents = data.events;
-      const spaceKeywords = ["NASA", "Apollo", "space", "launch", "orbiter", "moon", "satellite", "telescope", "astronaut", "cosmonaut", "mission"];
-      
-      const spaceEvents = allEvents.filter(event =>
-        spaceKeywords.some(keyword => event.text.toLowerCase().includes(keyword))
-      );
-
-      if (spaceEvents.length === 0) {
-        wikiSection.innerHTML = `<p>📭 No space-related events found today.</p>`;
-        return;
-      }
-
-      wikiSection.innerHTML = spaceEvents.map(event => `
-        <div class="wiki-card">
-          <p><strong>${event.year}</strong>: ${event.text}</p>
-        </div>
-      `).join('');
-    })
-    .catch(err => {
-      wikiSection.innerHTML = `<p>🚫 Could not load Wikipedia events.</p>`;
-    });
-}
-const streakDisplay = document.getElementById("streak");
-const badgeList = document.getElementById("badgeList");
-
-function updateStreak(date) {
-  const today = new Date(date).toDateString();
-  const lastVisit = localStorage.getItem("lastVisit");
-  let streak = parseInt(localStorage.getItem("streak") || "0");
-
-  if (lastVisit) {
-    const yesterday = new Date(new Date(lastVisit));
-    yesterday.setDate(yesterday.getDate() + 1);
-
-    if (new Date(today).toDateString() === yesterday.toDateString()) {
-      streak += 1;
-    } else if (today === lastVisit) {
-      // same day – do nothing
-    } else {
-      streak = 1; // reset
-    }
-  } else {
-    streak = 1; // first visit
-  }
-
-  localStorage.setItem("streak", streak);
-  localStorage.setItem("lastVisit", today);
-  streakDisplay.textContent = `Visit streak: ${streak} day${streak > 1 ? "s" : ""}`;
-
-  assignBadges(streak);
-}
-
-function assignBadges(streak) {
-  const badges = [];
-
-  if (streak >= 1) badges.push("📖 First Edition");
-  if (streak >= 3) badges.push("🔥 3-Day Streak");
-  if (streak >= 5) badges.push("🚀 5-Day Explorer");
-
-  badgeList.innerHTML = "";
-  badges.forEach(badge => {
-    const li = document.createElement("li");
-    li.textContent = badge;
-    badgeList.appendChild(li);
-  });
-}
-updateStreak(datePicker.value);
-document.getElementById("printBtn").addEventListener("click", () => {
-  const edition = document.getElementById("newspaper");
-
-  const options = {
-    margin: 0.3,
-    filename: `Cosmic_Times_${datePicker.value}.pdf`,
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2 },
-    jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
-  };
-
-  html2pdf().set(options).from(edition).save();
-});
-const saveEditionBtn = document.getElementById("saveEditionBtn");
-const savedEditions = document.getElementById("savedEditions");
-
-saveEditionBtn.addEventListener("click", () => {
-  const date = datePicker.value;
-  if (!date) return alert("Select a date first!");
-
-  let archive = JSON.parse(localStorage.getItem("archive") || "[]");
-  if (!archive.includes(date)) {
-    archive.push(date);
-    localStorage.setItem("archive", JSON.stringify(archive));
-    loadArchive();
-    alert("✅ Edition saved to archive!");
-  } else {
-    alert("⚠️ Already saved.");
-  }
-});
-
-function loadArchive() {
-  const archive = JSON.parse(localStorage.getItem("archive") || "[]");
-  savedEditions.innerHTML = "";
-  archive.forEach(date => {
-    const li = document.createElement("li");
-    li.textContent = `📰 ${date}`;
-    li.onclick = () => {
-      datePicker.value = date;
-      datePicker.dispatchEvent(new Event("change")); // Trigger reload
-    };
-    savedEditions.appendChild(li);
-  });
-}
-
-window.onload = () => {
-  loadArchive();
-};
