@@ -1,35 +1,67 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>The Cosmic Times</title>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Crimson+Text:wght@400;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
-  <link rel="stylesheet" href="style.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cosmic Times - Your Daily Space News</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="newspaper">
-    <header class="masthead">
-      <h1 class="newspaper-title">THE COSMIC TIMES</h1>
-      <p class="tagline">Your Daily Window to the Universe</p>
-      <div class="date-selector">
-        <label for="date-input" style="color: rgba(255,255,255,0.9);">Select Date:</label>
-        <input type="date" id="date-input" class="date-input"  />
-        <button class="fetch-btn" onclick="fetchCosmicNews()">
-          <i class="fas fa-rocket"></i> Launch Edition
-        </button>
-      </div>
-    </header>
-
-    <main class="content" id="main-content">
-      <div class="loading" id="loading">
-        <div class="spinner"></div>
-        <p>Scanning the cosmos for today's stories...</p>
-      </div>
-    </main>
-  </div>
-
-  <script src="script.js"></script>
+    <div class="newspaper">
+        <div class="masthead">
+            <div class="stars-background"></div>
+            <div class="twinkling"></div>
+            <div class="planets"></div>
+            <h1 class="newspaper-title">COSMIC TIMES</h1>
+            <p class="tagline">Scanning the cosmos for today's stories...</p>
+            <div class="date-selector">
+                <input type="date" id="date-input" class="date-input" placeholder="Select Date">
+                <button onclick="fetchCosmicNews()" class="fetch-btn">Explore Universe</button>
+            </div>
+        </div>
+        
+        <div class="content">
+            <main class="main-content" id="main-content">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Scanning the cosmos for today's stories...</p>
+                </div>
+            </main>
+            
+            <aside class="sidebar">
+                <div class="section stats-section">
+                    <h2 class="section-title">🌌 Cosmic Stats</h2>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <span class="stat-number">400B+</span>
+                            <span>Stars in Milky Way</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">8</span>
+                            <span>Planets in Solar System</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="section" id="launches-section">
+                    <h2 class="section-title">🚀 Upcoming Launches</h2>
+                    <div id="launches-content">
+                        <p>Loading launch data...</p>
+                    </div>
+                </div>
+                
+                <div class="section badges-section">
+                    <h2 class="section-title">🏆 Space Achievements</h2>
+                    <div class="badge">First Moon Landing</div>
+                    <div class="badge">Mars Rovers</div>
+                    <div class="badge">ISS Operations</div>
+                    <div class="badge">Hubble Telescope</div>
+                </div>
+            </aside>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
 </body>
 </html>
