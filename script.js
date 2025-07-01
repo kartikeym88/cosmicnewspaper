@@ -1,285 +1,210 @@
-const API_KEY = "bT8GecFG6RdFe2ywdkafe1wMsMwmoXNcyMGi5CqO";
+const API_KEY = "bT8GecFG6RdFe2ywdkafe1wMsMwmoXNcyMGi5CqO"; // Replace with your NASA key
 const launchAPI = "https://ll.thespacedevs.com/2.2.0/launch/";
 
-// Space history events database
-const spaceHistory = {
-    "01-01": [
-        { title: "New Year in Space", details: "Multiple space missions have celebrated New Year's in orbit" }
-    ],
-    "01-28": [
-        { title: "Challenger Disaster", details: "1986 - Space Shuttle Challenger tragedy, remembering the crew" }
-    ],
-    "02-01": [
-        { title: "Columbia Disaster", details: "2003 - Space Shuttle Columbia lost during re-entry" }
-    ],
-    "04-12": [
-        { title: "Yuri Gagarin's Historic Flight", details: "1961 - First human in space aboard Vostok 1" }
-    ],
-    "04-24": [
-        { title: "Hubble Space Telescope Launch", details: "1990 - Revolutionary space observatory begins mission" }
-    ],
-    "07-16": [
-        { title: "Apollo 11 Launch", details: "1969 - Historic mission to land first humans on the Moon" }
-    ],
-    "07-20": [
-        { title: "Apollo 11 Moon Landing", details: "1969 - Neil Armstrong and Buzz Aldrin walk on the Moon" }
-    ],
-    "10-04": [
-        { title: "Sputnik 1 Launch", details: "1957 - First artificial satellite begins the Space Age" }
-    ],
-    "11-09": [
-        { title: "Berlin Wall Falls", details: "1989 - Historic event observed from space stations" }
-    ],
-    "12-21": [
-        { title: "Apollo 8 Launch", details: "1968 - First humans to leave Earth orbit and orbit the Moon" }
-    ]
-};
-
 document.addEventListener("DOMContentLoaded", () => {
-    const today = new Date().toISOString().split('T')[0];
-    const dateInput = document.getElementById('date-input');
-    
-    // Set today's date as default and maximum
-    dateInput.value = today;
-    dateInput.setAttribute('max', today);
-    
-    // Prevent future dates
-    dateInput.addEventListener('change', function() {
-        const selectedDate = new Date(this.value);
-        const currentDate = new Date();
-        
-        if (selectedDate > currentDate) {
-            alert('🚫 Future dates are not allowed! Please select a past or current date.');
-            this.value = today;
-        }
-    });
-    
-    // Prevent manual input of future dates
-    dateInput.addEventListener('input', function() {
-        const selectedDate = new Date(this.value);
-        const currentDate = new Date();
-        
-        if (selectedDate > currentDate) {
-            this.value = today;
-        }
-    });
-    
-    fetchCosmicNews();
-    createSpaceBackground();
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('date-input').value = today;
+  fetchCosmicNews();
 });
 
 document.getElementById("date-input").addEventListener("keypress", (e) => {
-    if (e.key === "Enter") fetchCosmicNews();
+  if (e.key === "Enter") fetchCosmicNews();
 });
 
 async function fetchCosmicNews() {
-    const date = document.getElementById("date-input").value;
-    const mainContent = document.getElementById("main-content");
-    
+  const date = document.getElementById("date-input").value;
+  const mainContent = document.getElementById("main-content");
+
+  mainContent.innerHTML = `
+    <div class="loading">
+      <div class="spinner"></div>
+      <p>Scanning the cosmos for stories from ${formatDate(date)}...</p>
+    </div>
+  `;
+
+  try {
+    const [apod, launches, history] = await Promise.all([
+      fetchAPOD(date),
+      fetchLaunches(date),
+      fetchSpaceHistory(date),
+    ]);
+    renderNewspaper(apod, launches, history, date);
+  } catch (error) {
+    console.error(error);
     mainContent.innerHTML = `
-        <div class="loading">
-            <div class="spinner"></div>
-            <p>Scanning the cosmos for stories from ${formatDate(date)}...</p>
-        </div>
+      <div class="error">
+        <h3><i class="fas fa-exclamation-triangle"></i> Cosmic Communication Error</h3>
+        <p>Could not fetch data. Please try again later.</p>
+      </div>
     `;
-
-    try {
-        // Fetch APOD
-        const apodResponse = await fetch(`https://api.nasa.gov/planetary/apod?api_key=${API_KEY}&date=${date}`);
-        const apodData = await apodResponse.json();
-        
-        // Fetch launches for the selected date
-        const launchResponse = await fetch(`${launchAPI}?net__gte=${date}T00:00:00Z&net__lte=${date}T23:59:59Z&limit=10`);
-        const launchData = await launchResponse.json();
-        
-        displayContent(apodData, launchData.results, date);
-        updateHistorySection(date);
-        
-    } catch (error) {
-        mainContent.innerHTML = `
-            <div class="error">
-                <h2>🛸 Communication Error</h2>
-                <p>Could not establish connection with the cosmic network. Please try again later.</p>
-                <p><small>Error: ${error.message}</small></p>
-            </div>
-        `;
-    }
+  }
 }
 
-function displayContent(apod, launches, date) {
-    const mainContent = document.getElementById("main-content");
-    const launchesContent = document.getElementById("launches-content");
-    const launchesTitle = document.getElementById("launches-title");
-    
-    // Update launches section title based on date
-    const selectedDate = new Date(date);
-    const today = new Date();
-    const isToday = selectedDate.toDateString() === today.toDateString();
-    const isPast = selectedDate < today;
-    
-    if (isToday) {
-        launchesTitle.textContent = "🚀 Today's Space Launches";
-    } else if (isPast) {
-        launchesTitle.textContent = "🚀 Space Launches on This Date";
-    } else {
-        launchesTitle.textContent = "🚀 Space Launches";
-    }
-    
-    // Display APOD
-    mainContent.innerHTML = `
-        <div class="headline-section visible">
-            ${apod.media_type === 'image' ? 
-                `<img src="${apod.url}" alt="${apod.title}" class="apod-image">` : 
-                `<iframe src="${apod.url}" class="apod-image" frameborder="0" allowfullscreen></iframe>`
-            }
-            <h1 class="headline">${apod.title}</h1>
-            <p class="byline">NASA Astronomy Picture of the Day • ${formatDate(date)}</p>
-            <div class="article-content">
-                <p>${apod.explanation}</p>
-                ${apod.copyright ? `<p><em>Image Credit: ${apod.copyright}</em></p>` : ''}
+function formatDate(dateStr) {
+  return new Date(dateStr).toLocaleDateString("en-US", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+}
+
+async function fetchAPOD(date) {
+  const cached = localStorage.getItem("apod-" + date);
+  if (cached) return JSON.parse(cached);
+
+  const response = await fetch(
+    `https://api.nasa.gov/planetary/apod?date=${date}&api_key=${API_KEY}`
+  );
+  if (!response.ok) throw new Error("Failed to fetch APOD");
+
+  const data = await response.json();
+  localStorage.setItem("apod-" + date, JSON.stringify(data));
+  return data;
+}
+
+async function fetchLaunches(date) {
+  const response = await fetch(
+    `${launchAPI}?window_start__date=${date}&window_end__date=${date}&limit=5`
+  );
+  if (!response.ok) throw new Error("Failed to fetch launches");
+  const data = await response.json();
+  return data.results;
+}
+
+async function fetchSpaceHistory(date) {
+  const month = new Date(date).getMonth() + 1;
+  const day = new Date(date).getDate();
+
+  const response = await fetch(`https://en.wikipedia.org/api/rest_v1/feed/onthisday/events/${month}/${day}`);
+  if (!response.ok) throw new Error("Failed to fetch history");
+
+  const data = await response.json();
+  return data.events.filter(event =>
+    ["space", "apollo", "nasa", "launch", "moon", "cosmos", "satellite"]
+      .some(keyword => event.text.toLowerCase().includes(keyword))
+  );
+}
+
+function renderNewspaper(apod, launches, history, date) {
+  const formattedDate = formatDate(date);
+  const mainContent = document.getElementById("main-content");
+
+  mainContent.innerHTML = `
+    <div class="main-content">
+      <article class="headline-section visible">
+        ${apod.media_type === "image"
+          ? `<img src="${apod.url}" alt="${apod.title}" class="apod-image" />`
+          : `<div class="apod-image" style="display:flex;justify-content:center;align-items:center;background:#222;color:#fff;height:300px;">Video: <a href="${apod.url}" style="color:#0f0;">View</a></div>`
+        }
+        <h2 class="headline">${apod.title}</h2>
+        <p class="byline">
+          <i class="fas fa-calendar-alt"></i> ${formattedDate} |
+          <i class="fas fa-camera"></i> NASA Astronomy Picture of the Day
+          ${apod?.copyright ? `| © ${apod?.copyright}` : ""}
+        </p>
+        <div class="article-content">${apod.explanation}</div>
+      </article>
+      ${history.length ? `
+        <section class="section">
+          <h3 class="section-title"><i class="fas fa-history"></i> On This Day in Space</h3>
+          ${history.map(event => `
+            <div class="history-item">
+              <div class="history-title">${event.year} - ${event.text}</div>
+              <div class="history-details"><i class="fas fa-calendar"></i> ${event.year}</div>
             </div>
+          `).join("")}
+        </section>
+      ` : ""}
+    </div>
+    
+
+    <aside class="sidebar">
+      <section class="section stats-section">
+        <h3 class="section-title"><i class="fas fa-chart-bar"></i> Cosmic Stats</h3>
+        <div class="stats-grid">
+          <div class="stat-item"><span class="stat-number">${launches.length}</span> Launches</div>
+          <div class="stat-item"><span class="stat-number">${history.length}</span> Historic Events</div>
         </div>
-    `;
-    
-    // Display launches with complete date information
-    if (launches && launches.length > 0) {
-        launchesContent.innerHTML = launches.map(launch => `
+      </section>
+
+      ${launches.length ? `
+        <section class="section">
+          <h3 class="section-title"><i class="fas fa-rocket"></i> Launch Reports</h3>
+          ${launches.map(launch => `
             <div class="launch-item">
-                <div class="launch-name">${launch.name}</div>
-                <div class="launch-details">
-                    <strong>📅 Launch Date:</strong> ${formatLaunchDate(launch.net)}<br>
-                    <strong>🌍 Location:</strong> ${launch.pad?.location?.name || 'Unknown Location'}<br>
-                    <strong>🚀 Agency:</strong> ${launch.launch_service_provider?.name || 'Unknown Agency'}<br>
-                    <strong>⏰ Status:</strong> ${launch.status?.name || 'Unknown'}
-                    ${launch.mission?.description ? `<br><strong>📝 Mission:</strong> ${launch.mission.description.substring(0, 100)}...` : ''}
-                </div>
+              <div class="launch-name">${launch.name}</div>
+              <div class="launch-details">
+                <i class="fas fa-building"></i> ${launch.launch_service_provider?.name || "Unknown"}<br>
+                <i class="fas fa-map-marker-alt"></i> ${launch.pad?.location?.name || "Unknown Location"}<br>
+                <i class="fas fa-clock"></i> ${launch.status?.name || "Unknown"}
+              </div>
             </div>
-        `).join('');
-    } else {
-        launchesContent.innerHTML = `
-            <div class="launch-item">
-                <div class="launch-name">No launches on ${formatDate(date)}</div>
-                <div class="launch-details">
-                    <strong>📅 Selected Date:</strong> ${formatDate(date)}<br>
-                    🌟 No space missions were launched on this date.<br>
-                    🚀 Try selecting other dates to discover exciting space missions!
-                </div>
-            </div>
-        `;
-    }
+          `).join("")}
+        </section>
+      ` : ""}
+
+      
+
+      <section class="section badges-section">
+        <h3 class="section-title">
+          <i class="fas fa-medal"></i> Space Explorer Status
+        </h3>
+        <div class="badge">🚀 First Edition</div>
+        <div class="badge">🌟 Cosmic Curious</div>
+        <div class="badge">📅 Time Traveler</div>
+        <p style="margin-top: 15px; opacity: 0.8;">
+          Keep exploring to unlock more badges and build your cosmic archive!
+        </p>
+      </section>
+    </aside>
+    
+  `;
+}
+for (let i = 0; i < 120; i++) {
+    const star = document.createElement('div');
+    star.className = 'star';
+    star.style.left = Math.random() * 100 + 'vw';
+    star.style.top = Math.random() * 100 + 'vh';
+    star.style.width = star.style.height = (Math.random() * 2 + 1) + 'px';
+    star.style.opacity = Math.random() * 0.7 + 0.3;
+    star.style.animationDuration = (Math.random() * 2 + 2) + 's';
+    document.body.appendChild(star);
+  }
+  // --- Animated Starfield and Shooting Stars ---
+const canvas = document.getElementById('space-canvas');
+const ctx = canvas.getContext('2d');
+let w = window.innerWidth, h = window.innerHeight;
+canvas.width = w; canvas.height = h;
+
+function randomStar() {
+  return {
+    x: Math.random() * w,
+    y: Math.random() * h,
+    r: Math.random() * 1.2 + 0.5,
+    speed: Math.random() * 0.2 + 0.05,
+    twinkle: Math.random() * 100,
+  };
+}
+let stars = Array.from({length: 160}, randomStar);
+
+function drawStars() {
+  ctx.clearRect(0, 0, w, h);
+  stars.forEach(star => {
+    ctx.save();
+    ctx.globalAlpha = 0.7 + 0.3 * Math.sin((Date.now()/300) + star.twinkle);
+    ctx.beginPath();
+    ctx.arc(star.x, star.y, star.r, 0, 2 * Math.PI);
+    ctx.fillStyle = '#fff';
+    ctx.shadowColor = "#0ff";
+    ctx.shadowBlur = 8;
+    ctx.fill();
+    ctx.restore();
+    star.x += star.speed;
+    if (star.x > w) { star.x = 0; star.y = Math.random() * h; }
+  });
 }
 
-function updateHistorySection(date) {
-    const historyContent = document.getElementById("history-content");
-    const dateObj = new Date(date);
-    const monthDay = String(dateObj.getMonth() + 1).padStart(2, '0') + '-' + String(dateObj.getDate()).padStart(2, '0');
-    
-    const events = spaceHistory[monthDay];
-    
-    if (events && events.length > 0) {
-        historyContent.innerHTML = events.map(event => `
-            <div class="history-item">
-                <div class="history-title">${event.title}</div>
-                <div class="history-details">${event.details}</div>
-            </div>
-        `).join('');
-    } else {
-        historyContent.innerHTML = `
-            <div class="history-item">
-                <div class="history-title">Space History</div>
-                <div class="history-details">Every day contributes to humanity's journey among the stars. While no major space events are recorded for ${formatDate(date)}, the cosmos continues its eternal dance.</div>
-            </div>
-        `;
-    }
-}
 
-function formatDate(dateString) {
-    const options = { 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric',
-        weekday: 'long'
-    };
-    return new Date(dateString).toLocaleDateString('en-US', options);
-}
 
-function formatLaunchDate(dateString) {
-    const options = { 
-        year: 'numeric', 
-        month: 'short', 
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        timeZoneName: 'short',
-        weekday: 'short'
-    };
-    return new Date(dateString).toLocaleDateString('en-US', options);
-}
 
-function createSpaceBackground() {
-    const spaceContainer = document.querySelector('.space-background');
-    const starsLayer = document.querySelector('.stars-layer');
-    const movingStars = document.querySelector('.moving-stars');
-    const planetsLayer = document.querySelector('.planets-layer');
-    const nebula = document.querySelector('.nebula');
-    
-    // Create static stars
-    for (let i = 0; i < 400; i++) {
-        const star = document.createElement('div');
-        star.className = 'star';
-        star.style.left = Math.random() * 100 + '%';
-        star.style.top = Math.random() * 100 + '%';
-        star.style.animationDelay = Math.random() * 4 + 's';
-        star.style.animationDuration = (Math.random() * 3 + 2) + 's';
-        starsLayer.appendChild(star);
-    }
-    
-    // Create moving stars
-    for (let i = 0; i < 100; i++) {
-        const movingStar = document.createElement('div');
-        movingStar.className = 'moving-star';
-        movingStar.style.left = Math.random() * 100 + '%';
-        movingStar.style.top = Math.random() * 100 + '%';
-        movingStar.style.animationDelay = Math.random() * 10 + 's';
-        movingStar.style.animationDuration = (Math.random() * 20 + 15) + 's';
-        movingStars.appendChild(movingStar);
-    }
-    
-    // Create planets with realistic space movement
-    const planetData = [
-        { size: 12, color: '#ff6b6b', glow: '#ff6b6b' },
-        { size: 8, color: '#4834d4', glow: '#4834d4' },
-        { size: 15, color: '#ff9ff3', glow: '#ff9ff3' },
-        { size: 10, color: '#3742fa', glow: '#3742fa' },
-        { size: 6, color: '#2ed573', glow: '#2ed573' },
-        { size: 14, color: '#ffa502', glow: '#ffa502' },
-        { size: 9, color: '#70a1ff', glow: '#70a1ff' },
-        { size: 11, color: '#ff4757', glow: '#ff4757' },
-        { size: 7, color: '#a55eea', glow: '#a55eea' },
-        { size: 13, color: '#26de81', glow: '#26de81' }
-    ];
-    
-    planetData.forEach((planet, index) => {
-        const planetEl = document.createElement('div');
-        planetEl.className = 'space-planet';
-        planetEl.style.width = planet.size + 'px';
-        planetEl.style.height = planet.size + 'px';
-        planetEl.style.left = Math.random() * 100 + '%';
-        planetEl.style.top = Math.random() * 100 + '%';
-        planetEl.style.background = `radial-gradient(circle at 30% 30%, ${planet.color}, ${planet.color}88)`;
-        planetEl.style.boxShadow = `0 0 ${planet.size * 2}px ${planet.glow}66`;
-        planetEl.style.animationDelay = Math.random() * 30 + 's';
-        planetEl.style.animationDuration = (Math.random() * 40 + 30) + 's';
-        planetsLayer.appendChild(planetEl);
-    });
-    
-    // Create nebula effect
-    for (let i = 0; i < 5; i++) {
-        const nebulaEl = document.createElement('div');
-        nebulaEl.className = 'nebula-cloud';
-        nebulaEl.style.left = Math.random() * 100 + '%';
-        nebulaEl.style.top = Math.random() * 100 + '%';
-        nebulaEl.style.animationDelay = Math.random() * 20 + 's';
-        nebula.appendChild(nebulaEl);
-    }
-}
