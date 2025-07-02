@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧠 Cosmic Quiz - Test Your Space Knowledge</title>
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Merriweather', serif;
+            min-height: 100vh;
+        }
+
+        .quiz-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .quiz-header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .quiz-header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .quiz-header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .date-selector {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .date-selector label {
+            color: white;
+            font-size: 1.1em;
+            margin-right: 10px;
+        }
+
+        .date-selector input[type="date"] {
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: none;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+
+        #quizSection {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        #quizContainer {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        #quizIntro {
+            text-align: center;
+            padding: 20px;
+        }
+
+        #quizIntro h2 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        #quizIntro p {
+            color: #666;
+            font-size: 1.1em;
+            margin-bottom: 25px;
+        }
+
+        #startQuizBtn, #retakeQuizBtn {
+            background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        #startQuizBtn:hover, #retakeQuizBtn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .quiz-header-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        #questionCounter, #quizTimer {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #e3f2fd;
+            border-radius: 25px;
+            font-weight: bold;
+            color: #1976d2;
+            margin: 5px;
+        }
+
+        #quizTimer {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        #questionContainer {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 12px;
+            margin: 20px 0;
+            border: 1px solid #e9ecef;
+        }
+
+        #questionText {
+            font-size: 1.3em;
+            color: #333;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        #answersContainer {
+            display: grid;
+            gap: 12px;
+        }
+
+        .quiz-answer {
+            width: 100%;
+            padding: 18px 20px;
+            background: white;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 16px;
+            text-align: left;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .quiz-answer:hover {
+            background: #f0f8ff;
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+        }
+
+        .quiz-answer.correct {
+            background: #d4edda;
+            border-color: #28a745;
+            color: #155724;
+            animation: correctPulse 0.6s ease;
+        }
+
+        .quiz-answer.incorrect {
+            background: #f8d7da;
+            border-color: #dc3545;
+            color: #721c24;
+            animation: incorrectShake 0.6s ease;
+        }
+
+        @keyframes correctPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes incorrectShake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        #quizProgress {
+            width: 100%;
+            height: 10px;
+            background: #e9ecef;
+            border-radius: 5px;
+            overflow: hidden;
+            margin: 25px 0;
+        }
+
+        #progressBar {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.5s ease;
+            border-radius: 5px;
+        }
+
+        #quizResults {
+            text-align: center;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 15px;
+            margin-top: 20px;
+        }
+
+        #quizResults h3 {
+            font-size: 2em;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        #scoreDisplay {
+            margin: 25px 0;
+        }
+
+        #scoreDisplay h4 {
+            font-size: 1.8em;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        #scoreDisplay p {
+            font-size: 1.2em;
+            color: #666;
+        }
+
+        .quiz-badges {
+            margin: 25px 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+            border-radius: 10px;
+            font-size: 1.3em;
+            border: 2px solid #f39c12;
+        }
+
+        .category-tag {
+            display: inline-block;
+            background: #6c757d;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            margin-bottom: 10px;
+        }
+
+        .category-tag.apod { background: #17a2b8; }
+        .category-tag.launch { background: #28a745; }
+        .category-tag.general { background: #6f42c1; }
+        .category-tag.history { background: #dc3545; }
+
+        .quiz-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .loading-message {
+            text-align: center;
+            padding: 40px;
+            color: #667eea;
+            font-size: 1.2em;
+        }
+
+        @media (max-width: 768px) {
+            .quiz-container {
+                padding: 10px;
+            }
+            
+            .quiz-header h1 {
+                font-size: 2em;
+            }
+            
+            #quizSection {
+                padding: 20px;
+            }
+            
+            .quiz-header-info {
+                justify-content: center;
+            }
+            
+            #questionText {
+                font-size: 1.1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <div class="quiz-header">
+            <h1>🧠 Cosmic Quiz</h1>
+            <p>Test your knowledge of space exploration, astronomy, and cosmic events!</p>
+        </div>
+
+        <div class="date-selector">
+            <label for="quizDatePicker">📅 Select Date for Quiz:</label>
+            <input type="date" id="quizDatePicker" value="">
+        </div>
+
+        <section id="quizSection">
+            <div id="quizContainer">
+                <div id="quizIntro">
+                    <h2>🚀 Ready for Launch?</h2>
+                    <p>Challenge yourself with questions about space missions, astronomical phenomena, and cosmic history. Questions are dynamically generated based on the selected date's space events!</p>
+                    <button id="startQuizBtn">🌟 Start Cosmic Quiz</button>
+                </div>
+
+                <div id="quizGame" style="display: none;">
+                    <div class="quiz-header-info">
+                        <div id="questionCounter">Question <span id="currentQ">1</span> of <span id="totalQ">5</span></div>
+                        <div id="quizTimer">⏱️ <span id="timeLeft">30</span>s</div>
+                    </div>
+                    
+                    <div id="questionContainer">
+                        <div class="category-tag" id="questionCategory">General</div>
+                        <h3 id="questionText"></h3>
+                        <div id="answersContainer"></div>
+                    </div>
+                    
+                    <div id="quizProgress">
+                        <div id="progressBar"></div>
+                    </div>
+                </div>
+
+                <div id="quizResults" style="display: none;">
+                    <h3>🎯 Mission Complete!</h3>
+                    <div id="scoreDisplay"></div>
+                    <div class="quiz-stats" id="quizStats"></div>
+                    <div id="quizBadges"></div>
+                    <button id="retakeQuizBtn">🔄 Launch Another Quiz</button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        class CosmicQuiz {
+            constructor() {
+                this.questions = [];
+                this.currentQuestion = 0;
+                this.score = 0;
+                this.timeLeft = 30;
+                this.timer = null;
+                this.correctAnswers = 0;
+                this.totalTime = 0;
+                this.startTime = null;
+                this.selectedDate = null;
+                this.apodData = null;
+                this.launchData = null;
+                this.wikiData = null;
+            }
+
+            async generateQuestionsForDate(date) {
+                this.selectedDate = date;
+                this.questions = [];
+                
+                // Show loading message
+                document.getElementById('quizGame').innerHTML = '<div class="loading-message">🔄 Generating questions for ' + date + '...</div>';
+                
+                // Fetch the data for the selected date
+                await this.fetchDateData(date);
+                
+                // Generate questions from each data source
+                this.generateAPODQuestions();
+                this.generateLaunchQuestions();
+                this.generateWikiQuestions();
+                this.addContextualGeneralQuestions();
+                
+                // Ensure we have at least 5 questions
+                if (this.questions.length < 5) {
+                    this.addFallbackQuestions();
+                }
+                
+                // Shuffle and limit to 5 questions
+                this.questions = this.shuffleArray(this.questions).slice(0, 5);
+                
+                // Restore quiz interface
+                this.restoreQuizInterface();
+            }
+
+            async fetchDateData(date) {
+                try {
+                    // Fetch APOD data
+                    const apodResponse = await fetch(`https://api.nasa.gov/planetary/apod?date=${date}&api_key=DEMO_KEY`);
+                    if (apodResponse.ok) {
+                        this.apodData = await apodResponse.json();
+                    }
+
+                    // Fetch launch data
+                    const launchResponse = await fetch(`https://ll.thespacedevs.com/2.2.0/launch/?window_start__date=${date}&window_end__date=${date}`);
+                    if (launchResponse.ok) {
+                        const launchJson = await launchResponse.json();
+                        this.launchData = launchJson.results;
+                    }
+
+                    // Fetch Wikipedia events
+                    const [year, month, day] = date.split("-");
+                    const wikiResponse = await fetch(`https://en.wikipedia.org/api/rest_v1/feed/onthisday/events/${month}/${day}`);
+                    if (wikiResponse.ok) {
+                        const wikiJson = await wikiResponse.json();
+                        const spaceKeywords = ["NASA", "Apollo", "space", "launch", "orbiter", "moon", "satellite", "telescope", "astronaut", "cosmonaut", "mission", "spacecraft", "rocket", "Mars", "Venus", "Jupiter", "Saturn"];
+                        this.wikiData = wikiJson.events.filter(event => 
+                            spaceKeywords.some(keyword => event.text.toLowerCase().includes(keyword))
+                        );
+                    }
+                } catch (error) {
+                    console.error("Error fetching date data:", error);
+                }
+            }
+
+            generateAPODQuestions() {
+                if (!this.apodData) return;
+
+                const title = this.apodData.title.toLowerCase();
+                const explanation = this.apodData.explanation.toLowerCase();
+                
+                // Question about the APOD title
+                this.questions.push({
+                    question: `What is the title of NASA's Astronomy Picture of the Day for ${this.selectedDate}?`,
+                    answers: [
+                        this.apodData.title,
+                        this.generateFakeAPODTitle(),
+                        this.generateFakeAPODTitle(),
+                        this.generateFakeAPODTitle()
+                    ],
+                    correct: 0,
+                    category: "apod"
+                });
+
+                // Question about object type based on content analysis
+                if (title.includes('galaxy') || explanation.includes('galaxy')) {
+                    this.questions.push({
+                        question: `What type of celestial object is primarily featured in today's APOD?`,
+                        answers: ['Galaxy', 'Nebula', 'Star Cluster', 'Planet'],
+                        correct: 0,
+                        category: "apod"
+                    });
+                } else if (title.includes('nebula') || explanation.includes('nebula')) {
+                    this.questions.push({
+                        question: `What type of celestial object is primarily featured in today's APOD?`,
+                        answers: ['Nebula', 'Galaxy', 'Comet', 'Asteroid'],
+                        correct: 0,
+                        category: "apod"
+                    });
+                } else if (title.includes('planet') || explanation.includes('planet')) {
+                    this.questions.push({
+                        question: `What type of celestial object is primarily featured in today's APOD?`,
+                        answers: ['Planet', 'Moon', 'Asteroid', 'Comet'],
+                        correct: 0,
+                        category: "apod"
+                    });
+                }
+
+                // Question about media type
+                this.questions.push({
+                    question: `What type of media is the APOD for ${this.selectedDate}?`,
+                    answers: [
+                        this.apodData.media_type === 'image' ? 'Image' : 'Video',
+                        this.apodData.media_type === 'image' ? 'Video' : 'Image',
+                        'Audio',
+                        'Interactive'
+                    ],
+                    correct: 0,
+                    category: "apod"
+                });
+            }
+
+            generateLaunchQuestions() {
+                if (!this.launchData || this.launchData.length === 0) return;
+
+                const launch = this.launchData[0];
+                
+                // Question about the launch agency
+                this.questions.push({
+                    question: `Which space agency conducted a launch on ${this.selectedDate}?`,
+                    answers: [
+                        launch.launch_service_provider?.name || "Unknown Agency",
+                        this.getRandomAgency(),
+                        this.getRandomAgency(),
+                        this.getRandomAgency()
+                    ],
+                    correct: 0,
+                    category: "launch"
+                });
+
+                // Question about launch status
+                if (launch.status?.name) {
+                    this.questions.push({
+                        question: `What was the status of the ${launch.name} mission?`,
+                        answers: [
+                            launch.status.name,
+                            this.getRandomLaunchStatus(),
+                            this.getRandomLaunchStatus(),
+                            this.getRandomLaunchStatus()
+                        ],
+                        correct: 0,
+                        category: "launch"
+                    });
+                }
+
+                // Question about launch location
+                if (launch.pad?.location?.name) {
+                    this.questions.push({
+                        question: `From which location was the launch conducted on ${this.selectedDate}?`,
+                        answers: [
+                            launch.pad.location.name,
+                            this.getRandomLaunchLocation(),
+                            this.getRandomLaunchLocation(),
+                            this.getRandomLaunchLocation()
+                        ],
+                        correct: 0,
+                        category: "launch"
+                    });
+                }
+            }
+
+            generateWikiQuestions() {
+                if (!this.wikiData || this.wikiData.length === 0) return;
+
+                // Take the most significant space event from this day
+                const significantEvent = this.wikiData[0];
+                
+                this.questions.push({
+                    question: `In which year did this space-related event occur on ${this.getFormattedDate()}: "${this.truncateText(significantEvent.text, 60)}"?`,
+                    answers: [
+                        significantEvent.year.toString(),
+                        this.getRandomYear(significantEvent.year),
+                        this.getRandomYear(significantEvent.year),
+                        this.getRandomYear(significantEvent.year)
+                    ],
+                    correct: 0,
+                    category: "history"
+                });
+
+                // If there are multiple events, create another question
+                if (this.wikiData.length > 1) {
+                    const secondEvent = this.wikiData[1];
+                    this.questions.push({
+                        question: `True or False: This space event happened on ${this.getFormattedDate()}: "${this.truncateText(secondEvent.text, 80)}"`,
+                        answers: ['True', 'False'],
+                        correct: 0,
+                        category: "history"
+                    });
+                }
+            }
+
+            addContextualGeneralQuestions() {
+                const year = parseInt(this.selectedDate.split('-')[0]);
+                
+                // Add era-specific questions
+                if (year >= 1957 && year <= 1975) {
+                    this.questions.push({
+                        question: `During the ${year}s Space Race era, which two superpowers were primarily competing?`,
+                        answers: ['USA and Soviet Union', 'USA and China', 'Soviet Union and Europe', 'USA and Japan'],
+                        correct: 0,
+                        category: "general"
+                    });
+                } else if (year >= 1981 && year <= 2011) {
+                    this.questions.push({
+                        question: `The ${year}s were part of which major NASA program era?`,
+                        answers: ['Space Shuttle Program', 'Apollo Program', 'Mercury Program', 'Artemis Program'],
+                        correct: 0,
+                        category: "general"
+                    });
+                } else if (year >= 2000) {
+                    this.questions.push({
+                        question: `The ${year}s marked the beginning of which space exploration trend?`,
+                        answers: ['Commercial Space Flight', 'Moon Landing', 'First Satellites', 'Space Stations'],
+                        correct: 0,
+                        category: "general"
+                    });
+                }
+            }
+
+            // Helper methods for generating realistic fake answers
+            generateFakeAPODTitle() {
+                const fakeObjects = ['Spiral Galaxy', 'Nebula', 'Star Cluster', 'Comet', 'Asteroid', 'Planet'];
+                const fakeDescriptors = ['Distant', 'Bright', 'Ancient', 'Mysterious', 'Colorful', 'Massive'];
+                const fakeLocations = ['Andromeda', 'Orion', 'Cassiopeia', 'Cygnus', 'Perseus', 'Centaurus'];
+                
+                return `${fakeDescriptors[Math.floor(Math.random() * fakeDescriptors.length)]} ${fakeObjects[Math.floor(Math.random() * fakeObjects.length)]} in ${fakeLocations[Math.floor(Math.random() * fakeLocations.length)]}`;
+            }
+
+            getRandomAgency() {
+                const agencies = ['SpaceX', 'Blue Origin', 'ESA', 'JAXA', 'ISRO', 'Roscosmos', 'CNSA'];
+                return agencies[Math.floor(Math.random() * agencies.length)];
+            }
+
+            getRandomLaunchStatus() {
+                const statuses = ['Success', 'Failure', 'Partial Failure', 'In Flight', 'Hold'];
+                return statuses[Math.floor(Math.random() * statuses.length)];
+            }
+
+            getRandomLaunchLocation() {
+                const locations = ['Kennedy Space Center', 'Baikonur Cosmodrome', 'Vandenberg AFB', 'Kourou', 'Plesetsk'];
+                return locations[Math.floor(Math.random() * locations.length)];
+            }
+
+            getRandomYear(actualYear) {
+                const variance = Math.floor(Math.random() * 10) + 1;
+                return (actualYear + (Math.random() > 0.5 ? variance : -variance)).toString();
+            }
+
+            truncateText(text, maxLength) {
+                return text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
+            }
+
+            getFormattedDate() {
+                const date = new Date(this.selectedDate);
+                return date.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
+            }
+
+            addFallbackQuestions() {
+                const fallbackQuestions = [
+                    {
+                        question: "What is the closest star to Earth?",
+                        answers: ["The Sun", "Proxima Centauri", "Alpha Centauri", "Sirius"],
+                        correct: 0,
+                        category: "general"
+                    },
+                    {
+                        question: "How many planets are in our solar system?",
+                        answers: ["8", "9", "7", "10"],
+                        correct: 0,
+                        category: "general"
+                    },
+                    {
+                        question: "What does ISS stand for?",
+                        answers: ["International Space Station", "Interstellar Space Ship", "International Satellite System", "Interplanetary Space Station"],
+                        correct: 0,
+                        category: "general"
+                    }
+                ];
+                
+                this.questions.push(...fallbackQuestions);
+            }
+
+            restoreQuizInterface() {
+                document.getElementById('quizGame').innerHTML = `
+                    <div class="quiz-header-info">
+                        <div id="questionCounter">Question <span id="currentQ">1</span> of <span id="totalQ">5</span></div>
+                        <div id="quizTimer">⏱️ <span id="timeLeft">30</span>s</div>
+                    </div>
+                    
+                    <div id="questionContainer">
+                        <div class="category-tag" id="questionCategory">General</div>
+                        <h3 id="questionText"></h3>
+                        <div id="answersContainer"></div>
+                    </div>
+                    
+                    <div id="quizProgress">
+                        <div id="progressBar"></div>
+                    </div>
+                `;
+            }
+
+            async startQuiz() {
+                const selectedDate = document.getElementById('quizDatePicker').value;
+                if (!selectedDate) {
+                    alert('Please select a date first!');
+                    return;
+                }
+                
+                document.getElementById('quizIntro').style.display = 'none';
+                document.getElementById('quizGame').style.display = 'block';
+                
+                await this.generateQuestionsForDate(selectedDate);
+                
+                document.getElementById('totalQ').textContent = this.questions.length;
+                this.currentQuestion = 0;
+                this.score = 0;
+                this.correctAnswers = 0;
+                this.startTime = Date.now();
+                this.showQuestion();
+            }
+
+            showQuestion() {
+                if (this.currentQuestion >= this.questions.length) {
+                    this.endQuiz();
+                    return;
+                }
+
+                const question = this.questions[this.currentQuestion];
+                document.getElementById('currentQ').textContent = this.currentQuestion + 1;
+                document.getElementById('questionText').textContent = question.question;
+                
+                // Update category tag
+                const categoryTag = document.getElementById('questionCategory');
+                categoryTag.textContent = question.category.toUpperCase();
+                categoryTag.className = `category-tag ${question.category}`;
+                
+                const answersContainer = document.getElementById('answersContainer');
+                answersContainer.innerHTML = '';
+
+                question.answers.forEach((answer, index) => {
+                    const button = document.createElement('button');
+                    button.className = 'quiz-answer';
+                    button.textContent = answer;
+                    button.onclick = () => this.selectAnswer(index);
+                    answersContainer.appendChild(button);
+                });
+
+                this.updateProgress();
+                this.startTimer();
+            }
+
+            selectAnswer(selectedIndex) {
+                clearInterval(this.timer);
+                const question = this.questions[this.currentQuestion];
+                const buttons = document.querySelectorAll('.quiz-answer');
+                
+                buttons.forEach((button, index) => {
+                    button.disabled = true;
+                    if (index === question.correct) {
+                        button.classList.add('correct');
+                    } else if (index === selectedIndex && index !== question.correct) {
+                        button.classList.add('incorrect');
+                    }
+                });
+
+                if (selectedIndex === question.correct) {
+                    this.score++;
+                    this.correctAnswers++;
+                }
+
+                setTimeout(() => {
+                    this.currentQuestion++;
+                    this.showQuestion();
+                }, 2000);
+            }
+
+            startTimer() {
+                this.timeLeft = 30;
+                document.getElementById('timeLeft').textContent = this.timeLeft;
+                
+                this.timer = setInterval(() => {
+                    this.timeLeft--;
+                    document.getElementById('timeLeft').textContent = this.timeLeft;
+                    
+                    if (this.timeLeft <= 0) {
+                        clearInterval(this.timer);
+                        this.selectAnswer(-1);
+                    }
+                }, 1000);
+            }
+
+            updateProgress() {
+                const progress = ((this.currentQuestion) / this.questions.length) * 100;
+                document.getElementById('progressBar').style.width = progress + '%';
+            }
+
+            endQuiz() {
+                this.totalTime = Math.round((Date.now() - this.startTime) / 1000);
+                document.getElementById('quizGame').style.display = 'none';
+                document.getElementById('quizResults').style.display = 'block';
+                
+                const percentage = Math.round((this.score / this.questions.length) * 100);
+                document.getElementById('scoreDisplay').innerHTML = `
+                    <h4>Your Score: ${this.score}/${this.questions.length} (${percentage}%)</h4>
+                    <p>${this.getScoreMessage(percentage)}</p>
+                    <p>Quiz based on space events for ${this.selectedDate}</p>
+                `;
+
+                this.showQuizStats();
+                this.updateQuizBadges(percentage);
+                this.updateQuizStreak();
+            }
+
+            showQuizStats() {
+                const avgTime = Math.round(this.totalTime / this.questions.length);
+                document.getElementById('quizStats').innerHTML = `
+                    <div class="stat-card">
+                        <div class="stat-number">${this.correctAnswers}</div>
+                        <div class="stat-label">Correct</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${this.totalTime}s</div>
+                        <div class="stat-label">Total Time</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${avgTime}s</div>
+                        <div class="stat-label">Avg per Q</div>
+                    </div>
+                `;
+            }
+
+            getScoreMessage(percentage) {
+                if (percentage === 100) return "🌟 Perfect! You're a true cosmic genius!";
+                if (percentage >= 80) return "🚀 Excellent! You have stellar knowledge!";
+                if (percentage >= 60) return "🌙 Good job! You're on the right orbit!";
+                if (percentage >= 40) return "🌍 Not bad! Keep exploring the cosmos!";
+                return "☄️ Keep studying! The universe has much to teach!";
+            }
+
+            updateQuizBadges(percentage) {
+                const badges = [];
+                if (percentage === 100) badges.push("🏆 Perfect Score");
+                if (percentage >= 80) badges.push("⭐ Space Expert");
+                if (this.correctAnswers >= 3) badges.push("🎯 Knowledge Seeker");
+                if (this.totalTime <= 60) badges.push("⚡ Speed Demon");
+                
+                const badgeContainer = document.getElementById('quizBadges');
+                badgeContainer.innerHTML = badges.length > 0 ? 
+                    `<div class="quiz-badges">🏅 Badges Earned: ${badges.join(' ')}</div>` : '';
+            }
+
+            updateQuizStreak() {
+                const today = new Date().toDateString();
+                const lastQuizDate = localStorage.getItem('lastQuizDate');
+                let quizStreak = parseInt(localStorage.getItem('quizStreak') || '0');
+
+                if (lastQuizDate !== today) {
+                    if (lastQuizDate) {
+                        const yesterday = new Date();
+                        yesterday.setDate(yesterday.getDate() - 1);
+                        if (lastQuizDate === yesterday.toDateString()) {
+                            quizStreak++;
+                        } else {
+                            quizStreak = 1;
+                        }
+                    } else {
+                        quizStreak = 1;
+                    }
+                    
+                    localStorage.setItem('quizStreak', quizStreak);
+                    localStorage.setItem('lastQuizDate', today);
+                    
+                    if (quizStreak > 1) {
+                        const badgeContainer = document.getElementById('quizBadges');
+                        badgeContainer.innerHTML += `<div class="quiz-badges">🔥 ${quizStreak}-Day Quiz Streak!</div>`;
+                    }
+                }
+            }
+
+            shuffleArray(array) {
+                const shuffled = [...array];
+                for (let i = shuffled.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+                }
+                return shuffled;
+            }
+        }
+
+        // Initialize quiz
+        const cosmicQuiz = new CosmicQuiz();
+
+        // Set default date to today
+        document.getElementById('quizDatePicker').value = new Date().toISOString().split('T')[0];
+
+        // Event listeners
+        document.getElementById('startQuizBtn').addEventListener('click', () => {
+            cosmicQuiz.startQuiz();
+        });
+
+        document.getElementById('retakeQuizBtn').addEventListener('click', () => {
+            document.getElementById('quizResults').style.display = 'none';
+            document.getElementById('quizIntro').style.display = 'block';
+        });
+
+        // Initialize on page load
+        window.addEventListener('load', () => {
+            console.log('🚀 Cosmic Quiz with Dynamic Questions loaded successfully!');
+        });
+    </script>
+</body>
+</html>
