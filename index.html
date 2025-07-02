@@ -4,18 +4,27 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>The Cosmic Times</title>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Crimson+Text:wght@400;600&display=swap" rel="stylesheet" />
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Playfair+Display:wght@400;700;900&family=Crimson+Text:wght@400;600&display=swap" rel="stylesheet" />
+
+  <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+
+  <!-- Stylesheet -->
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <!-- Starfield canvas -->
+  <canvas id="space-canvas"></canvas>
+
   <div class="newspaper">
     <header class="masthead">
       <h1 class="newspaper-title">THE COSMIC TIMES</h1>
       <p class="tagline">Your Daily Window to the Universe</p>
       <div class="date-selector">
         <label for="date-input" style="color: rgba(255,255,255,0.9);">Select Date:</label>
-        <input type="date" id="date-input" class="date-input"  />
+        <input type="date" id="date-input" class="date-input" max="" />
         <button class="fetch-btn" onclick="fetchCosmicNews()">
           <i class="fas fa-rocket"></i> Launch Edition
         </button>
@@ -30,7 +39,7 @@
     </main>
   </div>
 
+  <!-- JavaScript -->
   <script src="script.js"></script>
-
 </body>
 </html>
