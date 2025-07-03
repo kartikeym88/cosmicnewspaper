@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🧠 Cosmic Quiz - Test Your Space Knowledge</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
     
     <style>
         * {
@@ -495,33 +495,28 @@
     </style>
 </head>
 <body>
-    <!-- Animated background planets -->
-    <div class="planet planet-1"></div>
-    <div class="planet planet-2"></div>
-    <div class="planet planet-3"></div>
-
     <div class="quiz-container">
         <div class="quiz-header">
-            <h1>🌌 COSMIC QUIZ 🌌</h1>
-            <p>Journey through the cosmos and test your knowledge of space exploration, astronomy, and the infinite universe!</p>
+            <h1>🧠 Cosmic Quiz</h1>
+            <p>Test your knowledge of space exploration, astronomy, and cosmic events!</p>
         </div>
 
         <div class="date-selector">
-            <label for="quizDatePicker">🚀 Select Mission Date:</label>
+            <label for="quizDatePicker">📅 Select Date for Quiz:</label>
             <input type="date" id="quizDatePicker" value="">
         </div>
 
         <section id="quizSection">
             <div id="quizContainer">
                 <div id="quizIntro">
-                    <h2>🛸 PREPARE FOR LAUNCH</h2>
-                    <p>Embark on an interstellar adventure through space missions, astronomical phenomena, and cosmic history. Your mission parameters are generated based on real space events from your selected date!</p>
-                    <button id="startQuizBtn">🌟 Initialize Mission</button>
+                    <h2>🚀 Ready for Launch?</h2>
+                    <p>Challenge yourself with questions about space missions, astronomical phenomena, and cosmic history. Questions are dynamically generated based on the selected date's space events!</p>
+                    <button id="startQuizBtn">🌟 Start Cosmic Quiz</button>
                 </div>
 
                 <div id="quizGame" style="display: none;">
                     <div class="quiz-header-info">
-                        <div id="questionCounter">Mission <span id="currentQ">1</span> of <span id="totalQ">5</span></div>
+                        <div id="questionCounter">Question <span id="currentQ">1</span> of <span id="totalQ">5</span></div>
                         <div id="quizTimer">⏱️ <span id="timeLeft">30</span>s</div>
                     </div>
                     
@@ -537,11 +532,11 @@
                 </div>
 
                 <div id="quizResults" style="display: none;">
-                    <h3>🎯 MISSION COMPLETE!</h3>
+                    <h3>🎯 Mission Complete!</h3>
                     <div id="scoreDisplay"></div>
                     <div class="quiz-stats" id="quizStats"></div>
                     <div id="quizBadges"></div>
-                    <button id="retakeQuizBtn">🔄 Launch New Mission</button>
+                    <button id="retakeQuizBtn">🔄 Launch Another Quiz</button>
                 </div>
             </div>
         </section>
@@ -569,7 +564,7 @@
                 this.questions = [];
                 
                 // Show loading message
-                document.getElementById('quizGame').innerHTML = '<div class="loading-message">🔄 Scanning cosmic database for ' + date + '...</div>';
+                document.getElementById('quizGame').innerHTML = '<div class="loading-message">🔄 Generating questions for ' + date + '...</div>';
                 
                 // Fetch the data for the selected date
                 await this.fetchDateData(date);
@@ -618,7 +613,7 @@
                         );
                     }
                 } catch (error) {
-                    console.error("Error fetching cosmic data:", error);
+                    console.error("Error fetching date data:", error);
                 }
             }
 
@@ -630,7 +625,7 @@
                 
                 // Question about the APOD title
                 this.questions.push({
-                    question: `What cosmic wonder is featured in NASA's Astronomy Picture of the Day for ${this.selectedDate}?`,
+                    question: `What is the title of NASA's Astronomy Picture of the Day for ${this.selectedDate}?`,
                     answers: [
                         this.apodData.title,
                         this.generateFakeAPODTitle(),
@@ -644,21 +639,21 @@
                 // Question about object type based on content analysis
                 if (title.includes('galaxy') || explanation.includes('galaxy')) {
                     this.questions.push({
-                        question: `What type of celestial object is primarily featured in today's APOD transmission?`,
+                        question: `What type of celestial object is primarily featured in today's APOD?`,
                         answers: ['Galaxy', 'Nebula', 'Star Cluster', 'Planet'],
                         correct: 0,
                         category: "apod"
                     });
                 } else if (title.includes('nebula') || explanation.includes('nebula')) {
                     this.questions.push({
-                        question: `What type of celestial object is primarily featured in today's APOD transmission?`,
+                        question: `What type of celestial object is primarily featured in today's APOD?`,
                         answers: ['Nebula', 'Galaxy', 'Comet', 'Asteroid'],
                         correct: 0,
                         category: "apod"
                     });
                 } else if (title.includes('planet') || explanation.includes('planet')) {
                     this.questions.push({
-                        question: `What type of celestial object is primarily featured in today's APOD transmission?`,
+                        question: `What type of celestial object is primarily featured in today's APOD?`,
                         answers: ['Planet', 'Moon', 'Asteroid', 'Comet'],
                         correct: 0,
                         category: "apod"
@@ -667,7 +662,7 @@
 
                 // Question about media type
                 this.questions.push({
-                    question: `What type of media transmission is the APOD for ${this.selectedDate}?`,
+                    question: `What type of media is the APOD for ${this.selectedDate}?`,
                     answers: [
                         this.apodData.media_type === 'image' ? 'Image' : 'Video',
                         this.apodData.media_type === 'image' ? 'Video' : 'Image',
@@ -686,7 +681,7 @@
                 
                 // Question about the launch agency
                 this.questions.push({
-                    question: `Which space agency executed a launch mission on ${this.selectedDate}?`,
+                    question: `Which space agency conducted a launch on ${this.selectedDate}?`,
                     answers: [
                         launch.launch_service_provider?.name || "Unknown Agency",
                         this.getRandomAgency(),
@@ -700,7 +695,7 @@
                 // Question about launch status
                 if (launch.status?.name) {
                     this.questions.push({
-                        question: `What was the mission status of the ${launch.name} operation?`,
+                        question: `What was the status of the ${launch.name} mission?`,
                         answers: [
                             launch.status.name,
                             this.getRandomLaunchStatus(),
@@ -715,7 +710,7 @@
                 // Question about launch location
                 if (launch.pad?.location?.name) {
                     this.questions.push({
-                        question: `From which launch facility was the mission executed on ${this.selectedDate}?`,
+                        question: `From which location was the launch conducted on ${this.selectedDate}?`,
                         answers: [
                             launch.pad.location.name,
                             this.getRandomLaunchLocation(),
@@ -735,7 +730,7 @@
                 const significantEvent = this.wikiData[0];
                 
                 this.questions.push({
-                    question: `In which year did this historic space event occur on ${this.getFormattedDate()}: "${this.truncateText(significantEvent.text, 60)}"?`,
+                    question: `In which year did this space-related event occur on ${this.getFormattedDate()}: "${this.truncateText(significantEvent.text, 60)}"?`,
                     answers: [
                         significantEvent.year.toString(),
                         this.getRandomYear(significantEvent.year),
@@ -750,8 +745,8 @@
                 if (this.wikiData.length > 1) {
                     const secondEvent = this.wikiData[1];
                     this.questions.push({
-                        question: `Mission Verification: Did this space event occur on ${this.getFormattedDate()}: "${this.truncateText(secondEvent.text, 80)}"`,
-                        answers: ['Confirmed', 'Denied'],
+                        question: `True or False: This space event happened on ${this.getFormattedDate()}: "${this.truncateText(secondEvent.text, 80)}"`,
+                        answers: ['True', 'False'],
                         correct: 0,
                         category: "history"
                     });
@@ -760,3 +755,322 @@
 
             addContextualGeneralQuestions() {
                 const year = parseInt(this.selectedDate.split('-')[0]);
+                
+                // Add era-specific questions
+                if (year >= 1957 && year <= 1975) {
+                    this.questions.push({
+                        question: `During the ${year}s Space Race era, which two superpowers were primarily competing?`,
+                        answers: ['USA and Soviet Union', 'USA and China', 'Soviet Union and Europe', 'USA and Japan'],
+                        correct: 0,
+                        category: "general"
+                    });
+                } else if (year >= 1981 && year <= 2011) {
+                    this.questions.push({
+                        question: `The ${year}s were part of which major NASA program era?`,
+                        answers: ['Space Shuttle Program', 'Apollo Program', 'Mercury Program', 'Artemis Program'],
+                        correct: 0,
+                        category: "general"
+                    });
+                } else if (year >= 2000) {
+                    this.questions.push({
+                        question: `The ${year}s marked the beginning of which space exploration trend?`,
+                        answers: ['Commercial Space Flight', 'Moon Landing', 'First Satellites', 'Space Stations'],
+                        correct: 0,
+                        category: "general"
+                    });
+                }
+            }
+
+            // Helper methods for generating realistic fake answers
+            generateFakeAPODTitle() {
+                const fakeObjects = ['Spiral Galaxy', 'Nebula', 'Star Cluster', 'Comet', 'Asteroid', 'Planet'];
+                const fakeDescriptors = ['Distant', 'Bright', 'Ancient', 'Mysterious', 'Colorful', 'Massive'];
+                const fakeLocations = ['Andromeda', 'Orion', 'Cassiopeia', 'Cygnus', 'Perseus', 'Centaurus'];
+                
+                return `${fakeDescriptors[Math.floor(Math.random() * fakeDescriptors.length)]} ${fakeObjects[Math.floor(Math.random() * fakeObjects.length)]} in ${fakeLocations[Math.floor(Math.random() * fakeLocations.length)]}`;
+            }
+
+            getRandomAgency() {
+                const agencies = ['SpaceX', 'Blue Origin', 'ESA', 'JAXA', 'ISRO', 'Roscosmos', 'CNSA'];
+                return agencies[Math.floor(Math.random() * agencies.length)];
+            }
+
+            getRandomLaunchStatus() {
+                const statuses = ['Success', 'Failure', 'Partial Failure', 'In Flight', 'Hold'];
+                return statuses[Math.floor(Math.random() * statuses.length)];
+            }
+
+            getRandomLaunchLocation() {
+                const locations = ['Kennedy Space Center', 'Baikonur Cosmodrome', 'Vandenberg AFB', 'Kourou', 'Plesetsk'];
+                return locations[Math.floor(Math.random() * locations.length)];
+            }
+
+            getRandomYear(actualYear) {
+                const variance = Math.floor(Math.random() * 10) + 1;
+                return (actualYear + (Math.random() > 0.5 ? variance : -variance)).toString();
+            }
+
+            truncateText(text, maxLength) {
+                return text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
+            }
+
+            getFormattedDate() {
+                const date = new Date(this.selectedDate);
+                return date.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
+            }
+
+            addFallbackQuestions() {
+                const fallbackQuestions = [
+                    {
+                        question: "What is the closest star to Earth?",
+                        answers: ["The Sun", "Proxima Centauri", "Alpha Centauri", "Sirius"],
+                        correct: 0,
+                        category: "general"
+                    },
+                    {
+                        question: "How many planets are in our solar system?",
+                        answers: ["8", "9", "7", "10"],
+                        correct: 0,
+                        category: "general"
+                    },
+                    {
+                        question: "What does ISS stand for?",
+                        answers: ["International Space Station", "Interstellar Space Ship", "International Satellite System", "Interplanetary Space Station"],
+                        correct: 0,
+                        category: "general"
+                    }
+                ];
+                
+                this.questions.push(...fallbackQuestions);
+            }
+
+            restoreQuizInterface() {
+                document.getElementById('quizGame').innerHTML = `
+                    <div class="quiz-header-info">
+                        <div id="questionCounter">Question <span id="currentQ">1</span> of <span id="totalQ">5</span></div>
+                        <div id="quizTimer">⏱️ <span id="timeLeft">30</span>s</div>
+                    </div>
+                    
+                    <div id="questionContainer">
+                        <div class="category-tag" id="questionCategory">General</div>
+                        <h3 id="questionText"></h3>
+                        <div id="answersContainer"></div>
+                    </div>
+                    
+                    <div id="quizProgress">
+                        <div id="progressBar"></div>
+                    </div>
+                `;
+            }
+
+            async startQuiz() {
+                const selectedDate = document.getElementById('quizDatePicker').value;
+                if (!selectedDate) {
+                    alert('Please select a date first!');
+                    return;
+                }
+                
+                document.getElementById('quizIntro').style.display = 'none';
+                document.getElementById('quizGame').style.display = 'block';
+                
+                await this.generateQuestionsForDate(selectedDate);
+                
+                document.getElementById('totalQ').textContent = this.questions.length;
+                this.currentQuestion = 0;
+                this.score = 0;
+                this.correctAnswers = 0;
+                this.startTime = Date.now();
+                this.showQuestion();
+            }
+
+            showQuestion() {
+                if (this.currentQuestion >= this.questions.length) {
+                    this.endQuiz();
+                    return;
+                }
+
+                const question = this.questions[this.currentQuestion];
+                document.getElementById('currentQ').textContent = this.currentQuestion + 1;
+                document.getElementById('questionText').textContent = question.question;
+                
+                // Update category tag
+                const categoryTag = document.getElementById('questionCategory');
+                categoryTag.textContent = question.category.toUpperCase();
+                categoryTag.className = `category-tag ${question.category}`;
+                
+                const answersContainer = document.getElementById('answersContainer');
+                answersContainer.innerHTML = '';
+
+                question.answers.forEach((answer, index) => {
+                    const button = document.createElement('button');
+                    button.className = 'quiz-answer';
+                    button.textContent = answer;
+                    button.onclick = () => this.selectAnswer(index);
+                    answersContainer.appendChild(button);
+                });
+
+                this.updateProgress();
+                this.startTimer();
+            }
+
+            selectAnswer(selectedIndex) {
+                clearInterval(this.timer);
+                const question = this.questions[this.currentQuestion];
+                const buttons = document.querySelectorAll('.quiz-answer');
+                
+                buttons.forEach((button, index) => {
+                    button.disabled = true;
+                    if (index === question.correct) {
+                        button.classList.add('correct');
+                    } else if (index === selectedIndex && index !== question.correct) {
+                        button.classList.add('incorrect');
+                    }
+                });
+
+                if (selectedIndex === question.correct) {
+                    this.score++;
+                    this.correctAnswers++;
+                }
+
+                setTimeout(() => {
+                    this.currentQuestion++;
+                    this.showQuestion();
+                }, 2000);
+            }
+
+            startTimer() {
+                this.timeLeft = 30;
+                document.getElementById('timeLeft').textContent = this.timeLeft;
+                
+                this.timer = setInterval(() => {
+                    this.timeLeft--;
+                    document.getElementById('timeLeft').textContent = this.timeLeft;
+                    
+                    if (this.timeLeft <= 0) {
+                        clearInterval(this.timer);
+                        this.selectAnswer(-1);
+                    }
+                }, 1000);
+            }
+
+            updateProgress() {
+                const progress = ((this.currentQuestion) / this.questions.length) * 100;
+                document.getElementById('progressBar').style.width = progress + '%';
+            }
+
+            endQuiz() {
+                this.totalTime = Math.round((Date.now() - this.startTime) / 1000);
+                document.getElementById('quizGame').style.display = 'none';
+                document.getElementById('quizResults').style.display = 'block';
+                
+                const percentage = Math.round((this.score / this.questions.length) * 100);
+                document.getElementById('scoreDisplay').innerHTML = `
+                    <h4>Your Score: ${this.score}/${this.questions.length} (${percentage}%)</h4>
+                    <p>${this.getScoreMessage(percentage)}</p>
+                    <p>Quiz based on space events for ${this.selectedDate}</p>
+                `;
+
+                this.showQuizStats();
+                this.updateQuizBadges(percentage);
+                this.updateQuizStreak();
+            }
+
+            showQuizStats() {
+                const avgTime = Math.round(this.totalTime / this.questions.length);
+                document.getElementById('quizStats').innerHTML = `
+                    <div class="stat-card">
+                        <div class="stat-number">${this.correctAnswers}</div>
+                        <div class="stat-label">Correct</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${this.totalTime}s</div>
+                        <div class="stat-label">Total Time</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${avgTime}s</div>
+                        <div class="stat-label">Avg per Q</div>
+                    </div>
+                `;
+            }
+
+            getScoreMessage(percentage) {
+                if (percentage === 100) return "🌟 Perfect! You're a true cosmic genius!";
+                if (percentage >= 80) return "🚀 Excellent! You have stellar knowledge!";
+                if (percentage >= 60) return "🌙 Good job! You're on the right orbit!";
+                if (percentage >= 40) return "🌍 Not bad! Keep exploring the cosmos!";
+                return "☄️ Keep studying! The universe has much to teach!";
+            }
+
+            updateQuizBadges(percentage) {
+                const badges = [];
+                if (percentage === 100) badges.push("🏆 Perfect Score");
+                if (percentage >= 80) badges.push("⭐ Space Expert");
+                if (this.correctAnswers >= 3) badges.push("🎯 Knowledge Seeker");
+                if (this.totalTime <= 60) badges.push("⚡ Speed Demon");
+                
+                const badgeContainer = document.getElementById('quizBadges');
+                badgeContainer.innerHTML = badges.length > 0 ? 
+                    `<div class="quiz-badges">🏅 Badges Earned: ${badges.join(' ')}</div>` : '';
+            }
+
+            updateQuizStreak() {
+                const today = new Date().toDateString();
+                const lastQuizDate = localStorage.getItem('lastQuizDate');
+                let quizStreak = parseInt(localStorage.getItem('quizStreak') || '0');
+
+                if (lastQuizDate !== today) {
+                    if (lastQuizDate) {
+                        const yesterday = new Date();
+                        yesterday.setDate(yesterday.getDate() - 1);
+                        if (lastQuizDate === yesterday.toDateString()) {
+                            quizStreak++;
+                        } else {
+                            quizStreak = 1;
+                        }
+                    } else {
+                        quizStreak = 1;
+                    }
+                    
+                    localStorage.setItem('quizStreak', quizStreak);
+                    localStorage.setItem('lastQuizDate', today);
+                    
+                    if (quizStreak > 1) {
+                        const badgeContainer = document.getElementById('quizBadges');
+                        badgeContainer.innerHTML += `<div class="quiz-badges">🔥 ${quizStreak}-Day Quiz Streak!</div>`;
+                    }
+                }
+            }
+
+            shuffleArray(array) {
+                const shuffled = [...array];
+                for (let i = shuffled.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+                }
+                return shuffled;
+            }
+        }
+
+        // Initialize quiz
+        const cosmicQuiz = new CosmicQuiz();
+
+        // Set default date to today
+        document.getElementById('quizDatePicker').value = new Date().toISOString().split('T')[0];
+
+        // Event listeners
+        document.getElementById('startQuizBtn').addEventListener('click', () => {
+            cosmicQuiz.startQuiz();
+        });
+
+        document.getElementById('retakeQuizBtn').addEventListener('click', () => {
+            document.getElementById('quizResults').style.display = 'none';
+            document.getElementById('quizIntro').style.display = 'block';
+        });
+
+        // Initialize on page load
+        window.addEventListener('load', () => {
+            console.log('🚀 Cosmic Quiz with Dynamic Questions loaded successfully!');
+        });
+    </script>
+</body>
+</html>
