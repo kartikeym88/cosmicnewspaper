@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>About - The Cosmic Times</title>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Playfair+Display:wght@400;700;900&family=Crimson+Text:wght@400;600&display=swap" rel="stylesheet" />
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Orbitron', 'Crimson Text', serif;
+      background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
+      color: #e0e6f0;
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Starfield canvas */
+    #space-canvas {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: -1;
+      background: transparent;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+
+    .masthead {
+      text-align: center;
+      padding: 40px 20px 30px 20px;
+      background: linear-gradient(135deg, #000211 60%, #1a1a2e 100%);
+      color: #fff;
+      box-shadow: 0 0 40px #0ff4;
+      border-radius: 20px;
+      margin-bottom: 40px;
+    }
+
+    .newspaper-title {
+      font-family: 'Orbitron', 'Playfair Display', serif;
+      font-size: 3.2em;
+      font-weight: 900;
+      letter-spacing: 0.1em;
+      color: #fff;
+      text-shadow: 0 0 20px #00eaff, 0 0 40px #232857;
+      margin-bottom: 15px;
+    }
+
+    .tagline {
+      font-size: 1.2em;
+      opacity: 0.8;
+      color: #b9faff;
+    }
+
+    .about-content {
+      background: rgba(0, 2, 11, 0.95);
+      border-radius: 20px;
+      box-shadow: 0 0 60px #00eaff33;
+      border: 1px solid #00eaff33;
+      padding: 40px;
+      margin-bottom: 40px;
+    }
+
+    .about-section {
+      margin-bottom: 30px;
+    }
+
+    .about-section h2 {
+      font-family: 'Orbitron', 'Playfair Display', serif;
+      font-size: 1.8em;
+      font-weight: 700;
+      margin-bottom: 20px;
+      color: #00eaff;
+      text-shadow: 0 0 10px #00eaff88;
+    }
+
+    .about-section p {
+      font-size: 1.1em;
+      line-height: 1.7;
+      margin-bottom: 15px;
+      color: #e0e6f0;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-top: 30px;
+    }
+
+    .feature-card {
+      background: rgba(0, 60, 120, 0.25);
+      padding: 25px;
+      border-radius: 12px;
+      border-left: 4px solid #00eaff;
+      box-shadow: 0 0 20px #00eaff22;
+      text-align: center;
+    }
+
+    .feature-icon {
+      font-size: 2.5em;
+      color: #00eaff;
+      margin-bottom: 15px;
+    }
+
+    .feature-title {
+      font-size: 1.2em;
+      font-weight: 700;
+      margin-bottom: 10px;
+      color: #fff;
+    }
+
+    .feature-description {
+      font-size: 0.95em;
+      color: #b9faff;
+      line-height: 1.5;
+    }
+
+    .date-selector-section {
+      background: linear-gradient(135deg, #00eaff 0%, #232857 100%);
+      border-radius: 20px;
+      padding: 40px;
+      text-align: center;
+      color: #fff;
+      box-shadow: 0 0 40px #00eaff44;
+    }
+
+    .date-selector-section h2 {
+      font-family: 'Orbitron', 'Playfair Display', serif;
+      font-size: 2.2em;
+      font-weight: 700;
+      margin-bottom: 20px;
+      text-shadow: 0 0 10px rgba(255,255,255,0.5);
+    }
+
+    .date-selector-section p {
+      font-size: 1.2em;
+      margin-bottom: 30px;
+      opacity: 0.9;
+    }
+
+    .date-selector {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .date-input {
+      background: rgba(0, 30, 60, 0.5);
+      border: 2px solid #fff;
+      color: #fff;
+      padding: 15px 20px;
+      border-radius: 25px;
+      font-size: 1.1em;
+      outline: none;
+      box-shadow: 0 0 10px rgba(255,255,255,0.3);
+    }
+
+    .date-input:focus {
+      box-shadow: 0 0 20px rgba(255,255,255,0.5);
+    }
+
+    .launch-btn {
+      background: linear-gradient(90deg, #fff 0%, #b9faff 100%);
+      color: #000;
+      border: none;
+      padding: 15px 30px;
+      border-radius: 25px;
+      cursor: pointer;
+      font-size: 1.1em;
+      font-weight: 700;
+      box-shadow: 0 0 15px rgba(255,255,255,0.4);
+      text-transform: uppercase;
+      transition: all 0.3s ease;
+    }
+
+    .launch-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 25px rgba(255,255,255,0.6);
+    }
+
+    .launch-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .spinner {
+      border: 3px solid rgba(255,255,255,0.3);
+      border-top: 3px solid #fff;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 15px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .loading {
+      display: none;
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .newspaper-title {
+        font-size: 2.5em;
+      }
+      
+      .about-content {
+        padding: 25px;
+      }
+      
+      .date-selector-section {
+        padding: 30px 20px;
+      }
+      
+      .date-selector {
+        flex-direction: column;
+        gap: 15px;
+      }
+      
+      .date-input, .launch-btn {
+        width: 100%;
+        max-width: 300px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Starfield canvas -->
+  <canvas id="space-canvas"></canvas>
+
+  <div class="container">
+    <header class="masthead">
+      <h1 class="newspaper-title">THE COSMIC TIMES</h1>
+      <p class="tagline">Your Daily Window to the Universe</p>
+    </header>
+
+    <div class="about-content">
+      <div class="about-section">
+        <h2><i class="fas fa-telescope"></i> Welcome to The Cosmic Times</h2>
+        <p>
+          Step into a world where the cosmos meets journalism. The Cosmic Times is your personalized space newspaper, 
+          bringing you the wonders of the universe from any day in history. Whether you're curious about what happened 
+          in space on your birthday, a significant date, or just want to explore the astronomical events of the past, 
+          we've got you covered.
+        </p>
+        <p>
+          Our digital newspaper combines NASA's stunning Astronomy Picture of the Day with real space mission data, 
+          creating a unique reading experience that's both educational and visually captivating.
+        </p>
+      </div>
+
+      <div class="about-section">
+        <h2><i class="fas fa-rocket"></i> What Makes Us Special</h2>
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feature-icon">📸</div>
+            <div class="feature-title">Daily Cosmic Images</div>
+            <div class="feature-description">
+              Stunning astronomy photographs and explanations from NASA's archive
+            </div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">🚀</div>
+            <div class="feature-title">Space Missions</div>
+            <div class="feature-description">
+              Real-time data on launches, missions, and space events from around the world
+            </div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">📅</div>
+            <div class="feature-title">Time Travel</div>
+            <div class="feature-description">
+              Explore any date in history to see what was happening in space
+            </div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">🌟</div>
+            <div class="feature-title">Immersive Design</div>
+            <div class="feature-description">
+              Beautiful starfield backgrounds and cosmic-themed newspaper layout
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="about-section">
+        <h2><i class="fas fa-info-circle"></i> How It Works</h2>
+        <p>
+          Simply select any date below and click "Launch Edition" to generate your personalized cosmic newspaper. 
+          Each edition includes the NASA Astronomy Picture of the Day for that date, any space launches or events 
+          that occurred, and information about upcoming missions.
+        </p>
+        <p>
+          The data is sourced from NASA's official APIs and The Space Devs launch library, ensuring you get 
+          accurate and up-to-date information about humanity's greatest adventure - space exploration.
+        </p>
+      </div>
+    </div>
+
+    <div class="date-selector-section">
+      <h2><i class="fas fa-calendar-alt"></i> Choose Your Cosmic Date</h2>
+      <p>Select any date to explore the cosmic events and discoveries from that day</p>
+      
+      <div class="date-selector">
+        <input type="date" id="date-input" class="date-input" max="" />
+        <button class="launch-btn" id="launch-btn" onclick="launchCosmicEdition()">
+          <i class="fas fa-rocket"></i> Launch Edition
+        </button>
+      </div>
+      
+      <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <p>Launching your cosmic edition...</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Starfield animation
+    const canvas = document.getElementById('space-canvas');
+    const ctx = canvas.getContext('2d');
+    let stars = [];
+    let animationId;
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+
+    function createStars() {
+      stars = [];
+      const numStars = Math.min(200, Math.floor((canvas.width * canvas.height) / 5000));
+      
+      for (let i = 0; i < numStars; i++) {
+        stars.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          size: Math.random() * 2 + 0.5,
+          speed: Math.random() * 0.5 + 0.1,
+          opacity: Math.random() * 0.8 + 0.2
+        });
+      }
+    }
+
+    function animateStars() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      stars.forEach(star => {
+        star.y += star.speed;
+        if (star.y > canvas.height) {
+          star.y = -5;
+          star.x = Math.random() * canvas.width;
+        }
+        
+        ctx.beginPath();
+        ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255, 255, 255, ${star.opacity})`;
+        ctx.fill();
+      });
+      
+      animationId = requestAnimationFrame(animateStars);
+    }
+
+    function initStarfield() {
+      resizeCanvas();
+      createStars();
+      animateStars();
+    }
+
+    // Initialize date input
+    document.addEventListener("DOMContentLoaded", () => {
+      const today = new Date().toISOString().split('T')[0];
+      const dateInput = document.getElementById('date-input');
+      dateInput.value = today;
+      dateInput.max = today;
+      
+      // Initialize starfield
+      initStarfield();
+    });
+
+    // Handle window resize
+    window.addEventListener('resize', () => {
+      resizeCanvas();
+      createStars();
+    });
+
+    // Launch function
+    function launchCosmicEdition() {
+      const dateInput = document.getElementById('date-input');
+      const launchBtn = document.getElementById('launch-btn');
+      const loading = document.getElementById('loading');
+      
+      const selectedDate = dateInput.value;
+      
+      if (!selectedDate) {
+        alert('Please select a date to explore the cosmos!');
+        return;
+      }
+      
+      // Show loading state
+      launchBtn.disabled = true;
+      loading.style.display = 'block';
+      
+      // Simulate loading time for better UX
+      setTimeout(() => {
+        // Store the selected date in localStorage for the main page
+        localStorage.setItem('cosmic-selected-date', selectedDate);
+        
+        // Redirect to main page (you'll need to update this path)
+        window.location.href = 'main.html';
+      }, 1500);
+    }
+
+    // Allow Enter key to launch
+    document.getElementById('date-input').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        launchCosmicEdition();
+      }
+    });
+  </script>
+</body>
+</html>

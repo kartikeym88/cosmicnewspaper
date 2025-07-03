@@ -4,18 +4,32 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>The Cosmic Times</title>
-
-  <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Playfair+Display:wght@400;700;900&family=Crimson+Text:wght@400;600&display=swap" rel="stylesheet" />
-
-  <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
-
-  <!-- Stylesheet -->
   <link rel="stylesheet" href="style.css" />
+  <style>
+    .section-nav {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      margin-top: 20px;
+      margin-bottom: 20px;
+    }
+    .nav-link {
+      color: #00eaff;
+      font-weight: bold;
+      font-size: 1.1em;
+      text-decoration: none;
+      padding-bottom: 4px;
+      border-bottom: 2px solid transparent;
+      transition: all 0.3s ease;
+    }
+    .nav-link:hover {
+      border-color: #00eaff;
+    }
+  </style>
 </head>
 <body>
-  <!-- Starfield canvas -->
   <canvas id="space-canvas"></canvas>
 
   <div class="newspaper">
@@ -29,7 +43,20 @@
           <i class="fas fa-rocket"></i> Launch Edition
         </button>
       </div>
+
+      <!-- New Navigation Menu -->
+      <div class="section-nav">
+        <a href="apod.html" class="nav-link">APOD</a>
+        <a href="launches.html" class="nav-link">Launches</a>
+        <a href="otd.html" class="nav-link">OTD</a>
+        <a href="quiz.html" class="nav-link">Quiz</a>
+      </div>
     </header>
+    <!-- 🚀 Launch Count Box -->
+<div id="launch-count" class="launch-count-box" style="display: none;">
+  🚀 <span id="launch-number">0</span> launches scheduled today
+</div>
+
 
     <main class="content" id="main-content">
       <div class="loading" id="loading">
@@ -39,7 +66,6 @@
     </main>
   </div>
 
-  <!-- JavaScript -->
   <script src="script.js"></script>
 </body>
 </html>

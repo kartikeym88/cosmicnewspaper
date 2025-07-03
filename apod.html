@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>APOD - The Cosmic Times</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Playfair+Display:wght@400;700;900&family=Crimson+Text:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      font-family: 'Orbitron', 'Crimson Text', serif;
+      background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
+      color: #e0e6f0;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    #space-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: -1;
+      background: transparent;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 40px auto;
+      padding: 30px;
+      background: rgba(0, 2, 11, 0.95);
+      border-radius: 20px;
+      box-shadow: 0 0 60px #00eaff33;
+      border: 1px solid #00eaff33;
+    }
+
+    .main-heading {
+      text-align: center;
+      font-size: 2.8em;
+      color: #00eaff;
+      font-weight: 900;
+      margin-bottom: 30px;
+      text-shadow: 0 0 20px #00eaffaa;
+    }
+
+    .apod-title {
+      font-size: 2em;
+      font-weight: 800;
+      color: #ffffff;
+      text-shadow: 0 0 10px #00eaff88;
+      margin-bottom: 10px;
+    }
+
+    .apod-date {
+      font-size: 1em;
+      color: #b9faff;
+      font-style: italic;
+      margin-bottom: 25px;
+    }
+
+    .apod-image {
+      width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 0 40px #00eaff66;
+      margin-bottom: 25px;
+      transition: transform 0.6s ease, box-shadow 0.6s ease;
+    }
+
+    .apod-image:hover {
+      transform: scale(1.02);
+      box-shadow: 0 0 60px #00eaffaa;
+    }
+
+    .apod-description {
+      font-size: 1.15em;
+      line-height: 1.7;
+      text-align: justify;
+      color: #e0e6f0;
+    }
+
+    .back-link, #download-btn {
+      display: inline-block;
+      margin-top: 30px;
+      margin-right: 20px;
+      color: #00eaff;
+      text-decoration: underline;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="space-canvas"></canvas>
+  <div class="container">
+    <h1 class="main-heading">Astronomy Picture of the Day</h1>
+    <h2 class="apod-title" id="apod-title">Loading...</h2>
+    <p class="apod-date" id="apod-date"></p>
+    <img id="apod-image" class="apod-image" src="" alt="APOD Image" style="display: none;" />
+    <div id="apod-fallback" class="apod-description" style="display: none;"></div>
+    <p id="apod-explanation" class="apod-description"></p>
+    <div id="fact-box" class="apod-description" style="margin-top: 30px; font-style: italic; color: #b9faff;"></div>
+    <a href="main.html" class="back-link">← Back to Main Page</a>
+    <a id="download-btn" href="#" class="back-link" download style="display: none;">⬇ Download Image</a>
+  </div>
+
+  <script>
+    const API_KEY = "bT8GecFG6RdFe2ywdkafe1wMsMwmoXNcyMGi5CqO";
+    const selectedDate = localStorage.getItem("cosmic-selected-date") || new Date().toISOString().split("T")[0];
+    const canvas = document.getElementById('space-canvas');
+    const ctx = canvas.getContext('2d');
+    let stars = [];
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+
+    function createStars() {
+      stars = [];
+      const numStars = Math.min(200, Math.floor((canvas.width * canvas.height) / 5000));
+      for (let i = 0; i < numStars; i++) {
+        stars.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          size: Math.random() * 2 + 0.5,
+          speed: Math.random() * 0.5 + 0.1,
+          opacity: Math.random() * 0.8 + 0.2
+        });
+      }
+    }
+
+    function animateStars() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      stars.forEach(star => {
+        star.y += star.speed;
+        if (star.y > canvas.height) {
+          star.y = -5;
+          star.x = Math.random() * canvas.width;
+        }
+        ctx.beginPath();
+        ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255, 255, 255, ${star.opacity})`;
+        ctx.fill();
+      });
+      requestAnimationFrame(animateStars);
+    }
+
+    window.addEventListener('resize', () => {
+      resizeCanvas();
+      createStars();
+    });
+
+    resizeCanvas();
+    createStars();
+    animateStars();
+
+    fetch(`https://api.nasa.gov/planetary/apod?date=${selectedDate}&api_key=${API_KEY}`)
+      .then(res => {
+        if (!res.ok) throw new Error("Failed to fetch APOD");
+        return res.json();
+      })
+      .then(data => {
+        document.getElementById("apod-title").innerText = data.title || "Astronomy Picture of the Day";
+        document.getElementById("apod-explanation").innerText = data.explanation || "No explanation available.";
+        document.getElementById("apod-date").innerText = `Date: ${new Date(data.date).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}`;
+
+        if (data.media_type === "image") {
+          const img = document.getElementById("apod-image");
+          img.src = data.url;
+          img.alt = data.title;
+          img.style.display = "block";
+          const dl = document.getElementById("download-btn");
+          dl.href = data.url;
+          dl.style.display = "inline-block";
+        } else {
+          const fallback = document.getElementById("apod-fallback");
+          fallback.innerHTML = `Video available: <a href="${data.url}" target="_blank" style="color:#00eaff">Watch here</a>`;
+          fallback.style.display = "block";
+        }
+
+        const funFacts = [
+          "A day on Venus is longer than its year.",
+          "Neutron stars can spin 600 times per second.",
+          "There may be a planet made of diamonds.",
+          "One spoon of a neutron star weighs a billion tons.",
+          "Saturn could float in water due to its low density."
+        ];
+        document.getElementById("fact-box").innerText = "💡 Did you know? " + funFacts[Math.floor(Math.random() * funFacts.length)];
+      })
+      .catch(err => {
+        document.getElementById("apod-title").innerText = "Unable to load APOD";
+        document.getElementById("apod-explanation").innerText = "Please try again later or check your connection.";
+        console.error("APOD Error:", err);
+      });
+  </script>
+</body>
+</html>
