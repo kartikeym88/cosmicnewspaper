@@ -4,303 +4,476 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🧠 Cosmic Quiz - Test Your Space Knowledge</title>
-    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet">
     
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             margin: 0;
             padding: 0;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            font-family: 'Merriweather', serif;
+            background: radial-gradient(ellipse at center, #1a1a2e 0%, #16213e 50%, #0f0f23 100%);
+            font-family: 'Exo 2', sans-serif;
             min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Animated stars background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(2px 2px at 20px 30px, #ffffff, transparent),
+                radial-gradient(2px 2px at 40px 70px, #ffffff, transparent),
+                radial-gradient(1px 1px at 90px 40px, #ffffff, transparent),
+                radial-gradient(1px 1px at 130px 80px, #ffffff, transparent),
+                radial-gradient(2px 2px at 160px 30px, #ffffff, transparent),
+                radial-gradient(1px 1px at 200px 90px, #ffffff, transparent),
+                radial-gradient(2px 2px at 240px 50px, #ffffff, transparent),
+                radial-gradient(1px 1px at 280px 10px, #ffffff, transparent),
+                radial-gradient(1px 1px at 320px 70px, #ffffff, transparent),
+                radial-gradient(2px 2px at 360px 40px, #ffffff, transparent);
+            background-repeat: repeat;
+            background-size: 400px 200px;
+            animation: twinkle 10s linear infinite;
+            z-index: -1;
+            opacity: 0.7;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+
+        /* Floating planets */
+        .planet {
+            position: fixed;
+            border-radius: 50%;
+            z-index: -1;
+            opacity: 0.1;
+            animation: float 20s ease-in-out infinite;
+        }
+
+        .planet-1 {
+            width: 80px;
+            height: 80px;
+            background: radial-gradient(circle at 30% 30%, #ff6b6b, #c44569);
+            top: 10%;
+            right: 10%;
+            animation-delay: 0s;
+        }
+
+        .planet-2 {
+            width: 60px;
+            height: 60px;
+            background: radial-gradient(circle at 30% 30%, #4834d4, #686de0);
+            bottom: 20%;
+            left: 15%;
+            animation-delay: -10s;
+        }
+
+        .planet-3 {
+            width: 40px;
+            height: 40px;
+            background: radial-gradient(circle at 30% 30%, #ff9ff3, #f368e0);
+            top: 60%;
+            right: 20%;
+            animation-delay: -5s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
         }
 
         .quiz-container {
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
             padding: 20px;
+            position: relative;
+            z-index: 1;
         }
 
         .quiz-header {
             text-align: center;
             color: white;
             margin-bottom: 30px;
+            background: linear-gradient(135deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.1) 100%);
+            padding: 40px 20px;
+            border-radius: 20px;
+            border: 2px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
         }
 
         .quiz-header h1 {
-            font-size: 2.5em;
+            font-family: 'Orbitron', monospace;
+            font-size: 3em;
             margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            text-shadow: 0 0 20px rgba(64, 224, 255, 0.8);
+            background: linear-gradient(45deg, #40e0d0, #ff6b6b, #4834d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: glow 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 20px rgba(64, 224, 255, 0.8); }
+            to { text-shadow: 0 0 30px rgba(255, 107, 107, 0.8); }
         }
 
         .quiz-header p {
-            font-size: 1.2em;
+            font-size: 1.3em;
             opacity: 0.9;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
         }
 
         .date-selector {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
         }
 
         .date-selector label {
-            color: white;
-            font-size: 1.1em;
-            margin-right: 10px;
+            color: #40e0d0;
+            font-size: 1.2em;
+            margin-right: 15px;
+            font-weight: 600;
         }
 
         .date-selector input[type="date"] {
-            padding: 8px 12px;
-            border-radius: 8px;
-            border: none;
+            padding: 12px 18px;
+            border-radius: 10px;
+            border: 2px solid rgba(64, 224, 255, 0.3);
+            background: rgba(255,255,255,0.1);
+            color: white;
             font-size: 16px;
             margin-right: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .date-selector input[type="date"]:focus {
+            outline: none;
+            border-color: #40e0d0;
+            box-shadow: 0 0 15px rgba(64, 224, 255, 0.5);
         }
 
         #quizSection {
-            background: white;
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(15px);
         }
 
         #quizContainer {
-            max-width: 600px;
+            max-width: 700px;
             margin: 0 auto;
         }
 
         #quizIntro {
             text-align: center;
-            padding: 20px;
+            padding: 30px;
+            color: white;
         }
 
         #quizIntro h2 {
-            color: #333;
-            margin-bottom: 15px;
+            font-family: 'Orbitron', monospace;
+            color: #40e0d0;
+            margin-bottom: 20px;
+            font-size: 2.2em;
+            text-shadow: 0 0 15px rgba(64, 224, 255, 0.5);
         }
 
         #quizIntro p {
-            color: #666;
-            font-size: 1.1em;
-            margin-bottom: 25px;
+            color: rgba(255,255,255,0.8);
+            font-size: 1.2em;
+            margin-bottom: 30px;
+            line-height: 1.6;
         }
 
         #startQuizBtn, #retakeQuizBtn {
-            background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(45deg, #40e0d0 0%, #4834d4 50%, #ff6b6b 100%);
             color: white;
             border: none;
-            padding: 15px 30px;
-            border-radius: 25px;
+            padding: 18px 40px;
+            border-radius: 30px;
             font-size: 18px;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 8px 25px rgba(64, 224, 255, 0.4);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-family: 'Orbitron', monospace;
         }
 
         #startQuizBtn:hover, #retakeQuizBtn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+            transform: translateY(-5px);
+            box-shadow: 0 12px 35px rgba(64, 224, 255, 0.6);
+            background: linear-gradient(45deg, #ff6b6b 0%, #40e0d0 50%, #4834d4 100%);
         }
 
         .quiz-header-info {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
             flex-wrap: wrap;
         }
 
         #questionCounter, #quizTimer {
             display: inline-block;
-            padding: 10px 20px;
-            background: #e3f2fd;
+            padding: 15px 25px;
+            background: linear-gradient(135deg, rgba(64, 224, 255, 0.2) 0%, rgba(72, 52, 212, 0.2) 100%);
             border-radius: 25px;
             font-weight: bold;
-            color: #1976d2;
+            color: #40e0d0;
             margin: 5px;
+            border: 1px solid rgba(64, 224, 255, 0.3);
+            backdrop-filter: blur(10px);
+            font-family: 'Orbitron', monospace;
         }
 
         #quizTimer {
-            background: #fff3e0;
-            color: #f57c00;
+            background: linear-gradient(135deg, rgba(255, 107, 107, 0.2) 0%, rgba(255, 165, 0, 0.2) 100%);
+            color: #ff6b6b;
+            border-color: rgba(255, 107, 107, 0.3);
         }
 
         #questionContainer {
-            background: #f8f9fa;
-            padding: 25px;
-            border-radius: 12px;
-            margin: 20px 0;
-            border: 1px solid #e9ecef;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+            padding: 30px;
+            border-radius: 15px;
+            margin: 25px 0;
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
         }
 
         #questionText {
-            font-size: 1.3em;
-            color: #333;
-            margin-bottom: 20px;
-            line-height: 1.4;
+            font-size: 1.4em;
+            color: white;
+            margin-bottom: 25px;
+            line-height: 1.5;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
 
         #answersContainer {
             display: grid;
-            gap: 12px;
+            gap: 15px;
         }
 
         .quiz-answer {
             width: 100%;
-            padding: 18px 20px;
-            background: white;
-            border: 2px solid #dee2e6;
-            border-radius: 10px;
+            padding: 20px 25px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+            border: 2px solid rgba(64, 224, 255, 0.3);
+            border-radius: 12px;
             cursor: pointer;
             transition: all 0.3s ease;
             font-size: 16px;
             text-align: left;
+            color: white;
             position: relative;
             overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .quiz-answer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(64, 224, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .quiz-answer:hover::before {
+            left: 100%;
         }
 
         .quiz-answer:hover {
-            background: #f0f8ff;
-            border-color: #667eea;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+            background: linear-gradient(135deg, rgba(64, 224, 255, 0.2) 0%, rgba(72, 52, 212, 0.2) 100%);
+            border-color: #40e0d0;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(64, 224, 255, 0.3);
         }
 
         .quiz-answer.correct {
-            background: #d4edda;
-            border-color: #28a745;
-            color: #155724;
+            background: linear-gradient(135deg, rgba(76, 175, 80, 0.3) 0%, rgba(139, 195, 74, 0.3) 100%);
+            border-color: #4caf50;
+            color: #4caf50;
             animation: correctPulse 0.6s ease;
         }
 
         .quiz-answer.incorrect {
-            background: #f8d7da;
-            border-color: #dc3545;
-            color: #721c24;
+            background: linear-gradient(135deg, rgba(244, 67, 54, 0.3) 0%, rgba(255, 87, 34, 0.3) 100%);
+            border-color: #f44336;
+            color: #f44336;
             animation: incorrectShake 0.6s ease;
         }
 
         @keyframes correctPulse {
             0% { transform: scale(1); }
-            50% { transform: scale(1.02); }
+            50% { transform: scale(1.05); }
             100% { transform: scale(1); }
         }
 
         @keyframes incorrectShake {
             0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
+            25% { transform: translateX(-8px); }
+            75% { transform: translateX(8px); }
         }
 
         #quizProgress {
             width: 100%;
-            height: 10px;
-            background: #e9ecef;
-            border-radius: 5px;
+            height: 12px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 6px;
             overflow: hidden;
-            margin: 25px 0;
+            margin: 30px 0;
+            border: 1px solid rgba(255,255,255,0.1);
         }
 
         #progressBar {
             height: 100%;
-            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(90deg, #40e0d0 0%, #4834d4 50%, #ff6b6b 100%);
             transition: width 0.5s ease;
-            border-radius: 5px;
+            border-radius: 6px;
+            box-shadow: 0 0 15px rgba(64, 224, 255, 0.5);
         }
 
         #quizResults {
             text-align: center;
             padding: 40px 20px;
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            border-radius: 15px;
-            margin-top: 20px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+            border-radius: 20px;
+            margin-top: 30px;
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(15px);
+            color: white;
         }
 
         #quizResults h3 {
-            font-size: 2em;
-            color: #333;
-            margin-bottom: 20px;
+            font-family: 'Orbitron', monospace;
+            font-size: 2.5em;
+            color: #40e0d0;
+            margin-bottom: 25px;
+            text-shadow: 0 0 15px rgba(64, 224, 255, 0.5);
         }
 
         #scoreDisplay {
-            margin: 25px 0;
+            margin: 30px 0;
         }
 
         #scoreDisplay h4 {
-            font-size: 1.8em;
-            color: #667eea;
-            margin-bottom: 10px;
+            font-size: 2em;
+            color: #40e0d0;
+            margin-bottom: 15px;
+            font-family: 'Orbitron', monospace;
         }
 
         #scoreDisplay p {
-            font-size: 1.2em;
-            color: #666;
+            font-size: 1.3em;
+            color: rgba(255,255,255,0.8);
+            margin-bottom: 10px;
         }
 
         .quiz-badges {
-            margin: 25px 0;
-            padding: 20px;
-            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
-            border-radius: 10px;
-            font-size: 1.3em;
-            border: 2px solid #f39c12;
+            margin: 30px 0;
+            padding: 25px;
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.2) 0%, rgba(255, 165, 0, 0.2) 100%);
+            border-radius: 15px;
+            font-size: 1.4em;
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            backdrop-filter: blur(10px);
+            color: #ffd700;
         }
 
         .category-tag {
             display: inline-block;
-            background: #6c757d;
+            background: linear-gradient(45deg, #40e0d0, #4834d4);
             color: white;
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 0.8em;
-            margin-bottom: 10px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            margin-bottom: 15px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-family: 'Orbitron', monospace;
         }
 
-        .category-tag.apod { background: #17a2b8; }
-        .category-tag.launch { background: #28a745; }
-        .category-tag.general { background: #6f42c1; }
-        .category-tag.history { background: #dc3545; }
+        .category-tag.apod { background: linear-gradient(45deg, #17a2b8, #007bff); }
+        .category-tag.launch { background: linear-gradient(45deg, #28a745, #20c997); }
+        .category-tag.general { background: linear-gradient(45deg, #6f42c1, #e83e8c); }
+        .category-tag.history { background: linear-gradient(45deg, #dc3545, #fd7e14); }
 
         .quiz-stats {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            margin: 20px 0;
+            gap: 20px;
+            margin: 30px 0;
         }
 
         .stat-card {
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+            padding: 20px;
+            border-radius: 15px;
             text-align: center;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
         }
 
         .stat-number {
-            font-size: 2em;
+            font-size: 2.5em;
             font-weight: bold;
-            color: #667eea;
+            color: #40e0d0;
+            font-family: 'Orbitron', monospace;
         }
 
         .stat-label {
-            color: #666;
+            color: rgba(255,255,255,0.8);
             font-size: 0.9em;
+            margin-top: 5px;
         }
 
         .loading-message {
             text-align: center;
-            padding: 40px;
-            color: #667eea;
-            font-size: 1.2em;
+            padding: 50px;
+            color: #40e0d0;
+            font-size: 1.4em;
+            font-family: 'Orbitron', monospace;
         }
 
+        /* Responsive design */
         @media (max-width: 768px) {
             .quiz-container {
                 padding: 10px;
             }
             
             .quiz-header h1 {
-                font-size: 2em;
+                font-size: 2.2em;
             }
             
             #quizSection {
@@ -312,34 +485,43 @@
             }
             
             #questionText {
-                font-size: 1.1em;
+                font-size: 1.2em;
+            }
+
+            .planet {
+                display: none;
             }
         }
     </style>
 </head>
 <body>
+    <!-- Animated background planets -->
+    <div class="planet planet-1"></div>
+    <div class="planet planet-2"></div>
+    <div class="planet planet-3"></div>
+
     <div class="quiz-container">
         <div class="quiz-header">
-            <h1>🧠 Cosmic Quiz</h1>
-            <p>Test your knowledge of space exploration, astronomy, and cosmic events!</p>
+            <h1>🌌 COSMIC QUIZ 🌌</h1>
+            <p>Journey through the cosmos and test your knowledge of space exploration, astronomy, and the infinite universe!</p>
         </div>
 
         <div class="date-selector">
-            <label for="quizDatePicker">📅 Select Date for Quiz:</label>
+            <label for="quizDatePicker">🚀 Select Mission Date:</label>
             <input type="date" id="quizDatePicker" value="">
         </div>
 
         <section id="quizSection">
             <div id="quizContainer">
                 <div id="quizIntro">
-                    <h2>🚀 Ready for Launch?</h2>
-                    <p>Challenge yourself with questions about space missions, astronomical phenomena, and cosmic history. Questions are dynamically generated based on the selected date's space events!</p>
-                    <button id="startQuizBtn">🌟 Start Cosmic Quiz</button>
+                    <h2>🛸 PREPARE FOR LAUNCH</h2>
+                    <p>Embark on an interstellar adventure through space missions, astronomical phenomena, and cosmic history. Your mission parameters are generated based on real space events from your selected date!</p>
+                    <button id="startQuizBtn">🌟 Initialize Mission</button>
                 </div>
 
                 <div id="quizGame" style="display: none;">
                     <div class="quiz-header-info">
-                        <div id="questionCounter">Question <span id="currentQ">1</span> of <span id="totalQ">5</span></div>
+                        <div id="questionCounter">Mission <span id="currentQ">1</span> of <span id="totalQ">5</span></div>
                         <div id="quizTimer">⏱️ <span id="timeLeft">30</span>s</div>
                     </div>
                     
@@ -355,11 +537,11 @@
                 </div>
 
                 <div id="quizResults" style="display: none;">
-                    <h3>🎯 Mission Complete!</h3>
+                    <h3>🎯 MISSION COMPLETE!</h3>
                     <div id="scoreDisplay"></div>
                     <div class="quiz-stats" id="quizStats"></div>
                     <div id="quizBadges"></div>
-                    <button id="retakeQuizBtn">🔄 Launch Another Quiz</button>
+                    <button id="retakeQuizBtn">🔄 Launch New Mission</button>
                 </div>
             </div>
         </section>
@@ -387,7 +569,7 @@
                 this.questions = [];
                 
                 // Show loading message
-                document.getElementById('quizGame').innerHTML = '<div class="loading-message">🔄 Generating questions for ' + date + '...</div>';
+                document.getElementById('quizGame').innerHTML = '<div class="loading-message">🔄 Scanning cosmic database for ' + date + '...</div>';
                 
                 // Fetch the data for the selected date
                 await this.fetchDateData(date);
@@ -436,7 +618,7 @@
                         );
                     }
                 } catch (error) {
-                    console.error("Error fetching date data:", error);
+                    console.error("Error fetching cosmic data:", error);
                 }
             }
 
@@ -448,7 +630,7 @@
                 
                 // Question about the APOD title
                 this.questions.push({
-                    question: `What is the title of NASA's Astronomy Picture of the Day for ${this.selectedDate}?`,
+                    question: `What cosmic wonder is featured in NASA's Astronomy Picture of the Day for ${this.selectedDate}?`,
                     answers: [
                         this.apodData.title,
                         this.generateFakeAPODTitle(),
@@ -462,21 +644,21 @@
                 // Question about object type based on content analysis
                 if (title.includes('galaxy') || explanation.includes('galaxy')) {
                     this.questions.push({
-                        question: `What type of celestial object is primarily featured in today's APOD?`,
+                        question: `What type of celestial object is primarily featured in today's APOD transmission?`,
                         answers: ['Galaxy', 'Nebula', 'Star Cluster', 'Planet'],
                         correct: 0,
                         category: "apod"
                     });
                 } else if (title.includes('nebula') || explanation.includes('nebula')) {
                     this.questions.push({
-                        question: `What type of celestial object is primarily featured in today's APOD?`,
+                        question: `What type of celestial object is primarily featured in today's APOD transmission?`,
                         answers: ['Nebula', 'Galaxy', 'Comet', 'Asteroid'],
                         correct: 0,
                         category: "apod"
                     });
                 } else if (title.includes('planet') || explanation.includes('planet')) {
                     this.questions.push({
-                        question: `What type of celestial object is primarily featured in today's APOD?`,
+                        question: `What type of celestial object is primarily featured in today's APOD transmission?`,
                         answers: ['Planet', 'Moon', 'Asteroid', 'Comet'],
                         correct: 0,
                         category: "apod"
@@ -485,7 +667,7 @@
 
                 // Question about media type
                 this.questions.push({
-                    question: `What type of media is the APOD for ${this.selectedDate}?`,
+                    question: `What type of media transmission is the APOD for ${this.selectedDate}?`,
                     answers: [
                         this.apodData.media_type === 'image' ? 'Image' : 'Video',
                         this.apodData.media_type === 'image' ? 'Video' : 'Image',
@@ -504,7 +686,7 @@
                 
                 // Question about the launch agency
                 this.questions.push({
-                    question: `Which space agency conducted a launch on ${this.selectedDate}?`,
+                    question: `Which space agency executed a launch mission on ${this.selectedDate}?`,
                     answers: [
                         launch.launch_service_provider?.name || "Unknown Agency",
                         this.getRandomAgency(),
@@ -518,7 +700,7 @@
                 // Question about launch status
                 if (launch.status?.name) {
                     this.questions.push({
-                        question: `What was the status of the ${launch.name} mission?`,
+                        question: `What was the mission status of the ${launch.name} operation?`,
                         answers: [
                             launch.status.name,
                             this.getRandomLaunchStatus(),
@@ -533,7 +715,7 @@
                 // Question about launch location
                 if (launch.pad?.location?.name) {
                     this.questions.push({
-                        question: `From which location was the launch conducted on ${this.selectedDate}?`,
+                        question: `From which launch facility was the mission executed on ${this.selectedDate}?`,
                         answers: [
                             launch.pad.location.name,
                             this.getRandomLaunchLocation(),
@@ -553,7 +735,7 @@
                 const significantEvent = this.wikiData[0];
                 
                 this.questions.push({
-                    question: `In which year did this space-related event occur on ${this.getFormattedDate()}: "${this.truncateText(significantEvent.text, 60)}"?`,
+                    question: `In which year did this historic space event occur on ${this.getFormattedDate()}: "${this.truncateText(significantEvent.text, 60)}"?`,
                     answers: [
                         significantEvent.year.toString(),
                         this.getRandomYear(significantEvent.year),
@@ -568,8 +750,8 @@
                 if (this.wikiData.length > 1) {
                     const secondEvent = this.wikiData[1];
                     this.questions.push({
-                        question: `True or False: This space event happened on ${this.getFormattedDate()}: "${this.truncateText(secondEvent.text, 80)}"`,
-                        answers: ['True', 'False'],
+                        question: `Mission Verification: Did this space event occur on ${this.getFormattedDate()}: "${this.truncateText(secondEvent.text, 80)}"`,
+                        answers: ['Confirmed', 'Denied'],
                         correct: 0,
                         category: "history"
                     });
@@ -578,322 +760,3 @@
 
             addContextualGeneralQuestions() {
                 const year = parseInt(this.selectedDate.split('-')[0]);
-                
-                // Add era-specific questions
-                if (year >= 1957 && year <= 1975) {
-                    this.questions.push({
-                        question: `During the ${year}s Space Race era, which two superpowers were primarily competing?`,
-                        answers: ['USA and Soviet Union', 'USA and China', 'Soviet Union and Europe', 'USA and Japan'],
-                        correct: 0,
-                        category: "general"
-                    });
-                } else if (year >= 1981 && year <= 2011) {
-                    this.questions.push({
-                        question: `The ${year}s were part of which major NASA program era?`,
-                        answers: ['Space Shuttle Program', 'Apollo Program', 'Mercury Program', 'Artemis Program'],
-                        correct: 0,
-                        category: "general"
-                    });
-                } else if (year >= 2000) {
-                    this.questions.push({
-                        question: `The ${year}s marked the beginning of which space exploration trend?`,
-                        answers: ['Commercial Space Flight', 'Moon Landing', 'First Satellites', 'Space Stations'],
-                        correct: 0,
-                        category: "general"
-                    });
-                }
-            }
-
-            // Helper methods for generating realistic fake answers
-            generateFakeAPODTitle() {
-                const fakeObjects = ['Spiral Galaxy', 'Nebula', 'Star Cluster', 'Comet', 'Asteroid', 'Planet'];
-                const fakeDescriptors = ['Distant', 'Bright', 'Ancient', 'Mysterious', 'Colorful', 'Massive'];
-                const fakeLocations = ['Andromeda', 'Orion', 'Cassiopeia', 'Cygnus', 'Perseus', 'Centaurus'];
-                
-                return `${fakeDescriptors[Math.floor(Math.random() * fakeDescriptors.length)]} ${fakeObjects[Math.floor(Math.random() * fakeObjects.length)]} in ${fakeLocations[Math.floor(Math.random() * fakeLocations.length)]}`;
-            }
-
-            getRandomAgency() {
-                const agencies = ['SpaceX', 'Blue Origin', 'ESA', 'JAXA', 'ISRO', 'Roscosmos', 'CNSA'];
-                return agencies[Math.floor(Math.random() * agencies.length)];
-            }
-
-            getRandomLaunchStatus() {
-                const statuses = ['Success', 'Failure', 'Partial Failure', 'In Flight', 'Hold'];
-                return statuses[Math.floor(Math.random() * statuses.length)];
-            }
-
-            getRandomLaunchLocation() {
-                const locations = ['Kennedy Space Center', 'Baikonur Cosmodrome', 'Vandenberg AFB', 'Kourou', 'Plesetsk'];
-                return locations[Math.floor(Math.random() * locations.length)];
-            }
-
-            getRandomYear(actualYear) {
-                const variance = Math.floor(Math.random() * 10) + 1;
-                return (actualYear + (Math.random() > 0.5 ? variance : -variance)).toString();
-            }
-
-            truncateText(text, maxLength) {
-                return text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
-            }
-
-            getFormattedDate() {
-                const date = new Date(this.selectedDate);
-                return date.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
-            }
-
-            addFallbackQuestions() {
-                const fallbackQuestions = [
-                    {
-                        question: "What is the closest star to Earth?",
-                        answers: ["The Sun", "Proxima Centauri", "Alpha Centauri", "Sirius"],
-                        correct: 0,
-                        category: "general"
-                    },
-                    {
-                        question: "How many planets are in our solar system?",
-                        answers: ["8", "9", "7", "10"],
-                        correct: 0,
-                        category: "general"
-                    },
-                    {
-                        question: "What does ISS stand for?",
-                        answers: ["International Space Station", "Interstellar Space Ship", "International Satellite System", "Interplanetary Space Station"],
-                        correct: 0,
-                        category: "general"
-                    }
-                ];
-                
-                this.questions.push(...fallbackQuestions);
-            }
-
-            restoreQuizInterface() {
-                document.getElementById('quizGame').innerHTML = `
-                    <div class="quiz-header-info">
-                        <div id="questionCounter">Question <span id="currentQ">1</span> of <span id="totalQ">5</span></div>
-                        <div id="quizTimer">⏱️ <span id="timeLeft">30</span>s</div>
-                    </div>
-                    
-                    <div id="questionContainer">
-                        <div class="category-tag" id="questionCategory">General</div>
-                        <h3 id="questionText"></h3>
-                        <div id="answersContainer"></div>
-                    </div>
-                    
-                    <div id="quizProgress">
-                        <div id="progressBar"></div>
-                    </div>
-                `;
-            }
-
-            async startQuiz() {
-                const selectedDate = document.getElementById('quizDatePicker').value;
-                if (!selectedDate) {
-                    alert('Please select a date first!');
-                    return;
-                }
-                
-                document.getElementById('quizIntro').style.display = 'none';
-                document.getElementById('quizGame').style.display = 'block';
-                
-                await this.generateQuestionsForDate(selectedDate);
-                
-                document.getElementById('totalQ').textContent = this.questions.length;
-                this.currentQuestion = 0;
-                this.score = 0;
-                this.correctAnswers = 0;
-                this.startTime = Date.now();
-                this.showQuestion();
-            }
-
-            showQuestion() {
-                if (this.currentQuestion >= this.questions.length) {
-                    this.endQuiz();
-                    return;
-                }
-
-                const question = this.questions[this.currentQuestion];
-                document.getElementById('currentQ').textContent = this.currentQuestion + 1;
-                document.getElementById('questionText').textContent = question.question;
-                
-                // Update category tag
-                const categoryTag = document.getElementById('questionCategory');
-                categoryTag.textContent = question.category.toUpperCase();
-                categoryTag.className = `category-tag ${question.category}`;
-                
-                const answersContainer = document.getElementById('answersContainer');
-                answersContainer.innerHTML = '';
-
-                question.answers.forEach((answer, index) => {
-                    const button = document.createElement('button');
-                    button.className = 'quiz-answer';
-                    button.textContent = answer;
-                    button.onclick = () => this.selectAnswer(index);
-                    answersContainer.appendChild(button);
-                });
-
-                this.updateProgress();
-                this.startTimer();
-            }
-
-            selectAnswer(selectedIndex) {
-                clearInterval(this.timer);
-                const question = this.questions[this.currentQuestion];
-                const buttons = document.querySelectorAll('.quiz-answer');
-                
-                buttons.forEach((button, index) => {
-                    button.disabled = true;
-                    if (index === question.correct) {
-                        button.classList.add('correct');
-                    } else if (index === selectedIndex && index !== question.correct) {
-                        button.classList.add('incorrect');
-                    }
-                });
-
-                if (selectedIndex === question.correct) {
-                    this.score++;
-                    this.correctAnswers++;
-                }
-
-                setTimeout(() => {
-                    this.currentQuestion++;
-                    this.showQuestion();
-                }, 2000);
-            }
-
-            startTimer() {
-                this.timeLeft = 30;
-                document.getElementById('timeLeft').textContent = this.timeLeft;
-                
-                this.timer = setInterval(() => {
-                    this.timeLeft--;
-                    document.getElementById('timeLeft').textContent = this.timeLeft;
-                    
-                    if (this.timeLeft <= 0) {
-                        clearInterval(this.timer);
-                        this.selectAnswer(-1);
-                    }
-                }, 1000);
-            }
-
-            updateProgress() {
-                const progress = ((this.currentQuestion) / this.questions.length) * 100;
-                document.getElementById('progressBar').style.width = progress + '%';
-            }
-
-            endQuiz() {
-                this.totalTime = Math.round((Date.now() - this.startTime) / 1000);
-                document.getElementById('quizGame').style.display = 'none';
-                document.getElementById('quizResults').style.display = 'block';
-                
-                const percentage = Math.round((this.score / this.questions.length) * 100);
-                document.getElementById('scoreDisplay').innerHTML = `
-                    <h4>Your Score: ${this.score}/${this.questions.length} (${percentage}%)</h4>
-                    <p>${this.getScoreMessage(percentage)}</p>
-                    <p>Quiz based on space events for ${this.selectedDate}</p>
-                `;
-
-                this.showQuizStats();
-                this.updateQuizBadges(percentage);
-                this.updateQuizStreak();
-            }
-
-            showQuizStats() {
-                const avgTime = Math.round(this.totalTime / this.questions.length);
-                document.getElementById('quizStats').innerHTML = `
-                    <div class="stat-card">
-                        <div class="stat-number">${this.correctAnswers}</div>
-                        <div class="stat-label">Correct</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number">${this.totalTime}s</div>
-                        <div class="stat-label">Total Time</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number">${avgTime}s</div>
-                        <div class="stat-label">Avg per Q</div>
-                    </div>
-                `;
-            }
-
-            getScoreMessage(percentage) {
-                if (percentage === 100) return "🌟 Perfect! You're a true cosmic genius!";
-                if (percentage >= 80) return "🚀 Excellent! You have stellar knowledge!";
-                if (percentage >= 60) return "🌙 Good job! You're on the right orbit!";
-                if (percentage >= 40) return "🌍 Not bad! Keep exploring the cosmos!";
-                return "☄️ Keep studying! The universe has much to teach!";
-            }
-
-            updateQuizBadges(percentage) {
-                const badges = [];
-                if (percentage === 100) badges.push("🏆 Perfect Score");
-                if (percentage >= 80) badges.push("⭐ Space Expert");
-                if (this.correctAnswers >= 3) badges.push("🎯 Knowledge Seeker");
-                if (this.totalTime <= 60) badges.push("⚡ Speed Demon");
-                
-                const badgeContainer = document.getElementById('quizBadges');
-                badgeContainer.innerHTML = badges.length > 0 ? 
-                    `<div class="quiz-badges">🏅 Badges Earned: ${badges.join(' ')}</div>` : '';
-            }
-
-            updateQuizStreak() {
-                const today = new Date().toDateString();
-                const lastQuizDate = localStorage.getItem('lastQuizDate');
-                let quizStreak = parseInt(localStorage.getItem('quizStreak') || '0');
-
-                if (lastQuizDate !== today) {
-                    if (lastQuizDate) {
-                        const yesterday = new Date();
-                        yesterday.setDate(yesterday.getDate() - 1);
-                        if (lastQuizDate === yesterday.toDateString()) {
-                            quizStreak++;
-                        } else {
-                            quizStreak = 1;
-                        }
-                    } else {
-                        quizStreak = 1;
-                    }
-                    
-                    localStorage.setItem('quizStreak', quizStreak);
-                    localStorage.setItem('lastQuizDate', today);
-                    
-                    if (quizStreak > 1) {
-                        const badgeContainer = document.getElementById('quizBadges');
-                        badgeContainer.innerHTML += `<div class="quiz-badges">🔥 ${quizStreak}-Day Quiz Streak!</div>`;
-                    }
-                }
-            }
-
-            shuffleArray(array) {
-                const shuffled = [...array];
-                for (let i = shuffled.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-                }
-                return shuffled;
-            }
-        }
-
-        // Initialize quiz
-        const cosmicQuiz = new CosmicQuiz();
-
-        // Set default date to today
-        document.getElementById('quizDatePicker').value = new Date().toISOString().split('T')[0];
-
-        // Event listeners
-        document.getElementById('startQuizBtn').addEventListener('click', () => {
-            cosmicQuiz.startQuiz();
-        });
-
-        document.getElementById('retakeQuizBtn').addEventListener('click', () => {
-            document.getElementById('quizResults').style.display = 'none';
-            document.getElementById('quizIntro').style.display = 'block';
-        });
-
-        // Initialize on page load
-        window.addEventListener('load', () => {
-            console.log('🚀 Cosmic Quiz with Dynamic Questions loaded successfully!');
-        });
-    </script>
-</body>
-</html>
