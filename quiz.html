@@ -901,13 +901,22 @@
                 const answersContainer = document.getElementById('answersContainer');
                 answersContainer.innerHTML = '';
 
-                question.answers.forEach((answer, index) => {
+                // Shuffle answers and track new index of the correct one
+                const originalAnswers = question.answers.map((text, index) => ({
+                    text,
+                    index
+                }));
+
+                const shuffledAnswers = this.shuffleArray(originalAnswers);
+
+                shuffledAnswers.forEach((answerObj, i) => {
                     const button = document.createElement('button');
                     button.className = 'quiz-answer';
-                    button.textContent = answer;
-                    button.onclick = () => this.selectAnswer(index);
+                    button.textContent = answerObj.text;
+                    button.onclick = () => this.selectAnswer(answerObj.index);
                     answersContainer.appendChild(button);
-                });
+                    });
+
 
                 this.updateProgress();
                 this.startTimer();
@@ -917,12 +926,18 @@
                 clearInterval(this.timer);
                 const question = this.questions[this.currentQuestion];
                 const buttons = document.querySelectorAll('.quiz-answer');
-                
-                buttons.forEach((button, index) => {
+
+                buttons.forEach((button) => {
                     button.disabled = true;
-                    if (index === question.correct) {
+                    const answerText = button.textContent.trim();
+                    const correctText = question.answers[question.correct].trim();
+                    const selectedText = question.answers[selectedIndex]?.trim();
+
+                    if (answerText === correctText) {
                         button.classList.add('correct');
-                    } else if (index === selectedIndex && index !== question.correct) {
+                    } 
+                    
+                    else if (answerText === selectedText && answerText !== correctText) {
                         button.classList.add('incorrect');
                     }
                 });
@@ -933,10 +948,11 @@
                 }
 
                 setTimeout(() => {
-                    this.currentQuestion++;
-                    this.showQuestion();
+                this.currentQuestion++;
+                this.showQuestion();
                 }, 2000);
             }
+
 
             startTimer() {
                 this.timeLeft = 30;
