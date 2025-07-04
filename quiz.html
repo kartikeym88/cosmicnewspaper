@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🧠 Cosmic Quiz - Test Your Space Knowledge</title>
     <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
-    
+
     <style>
         * {
             box-sizing: border-box;
@@ -14,83 +14,22 @@
         body {
             margin: 0;
             padding: 0;
-            background: radial-gradient(ellipse at center, #1a1a2e 0%, #16213e 50%, #0f0f23 100%);
+            background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
             font-family: 'Exo 2', sans-serif;
             min-height: 100vh;
             position: relative;
             overflow-x: hidden;
+            color: #e0e6f0;
         }
 
-        /* Animated stars background */
-        body::before {
-            content: '';
+        /* Starfield canvas */
+        #space-canvas {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                radial-gradient(2px 2px at 20px 30px, #ffffff, transparent),
-                radial-gradient(2px 2px at 40px 70px, #ffffff, transparent),
-                radial-gradient(1px 1px at 90px 40px, #ffffff, transparent),
-                radial-gradient(1px 1px at 130px 80px, #ffffff, transparent),
-                radial-gradient(2px 2px at 160px 30px, #ffffff, transparent),
-                radial-gradient(1px 1px at 200px 90px, #ffffff, transparent),
-                radial-gradient(2px 2px at 240px 50px, #ffffff, transparent),
-                radial-gradient(1px 1px at 280px 10px, #ffffff, transparent),
-                radial-gradient(1px 1px at 320px 70px, #ffffff, transparent),
-                radial-gradient(2px 2px at 360px 40px, #ffffff, transparent);
-            background-repeat: repeat;
-            background-size: 400px 200px;
-            animation: twinkle 10s linear infinite;
+            top: 0; left: 0;
+            width: 100vw;
+            height: 100vh;
             z-index: -1;
-            opacity: 0.7;
-        }
-
-        @keyframes twinkle {
-            0%, 100% { opacity: 0.7; }
-            50% { opacity: 1; }
-        }
-
-        /* Floating planets */
-        .planet {
-            position: fixed;
-            border-radius: 50%;
-            z-index: -1;
-            opacity: 0.1;
-            animation: float 20s ease-in-out infinite;
-        }
-
-        .planet-1 {
-            width: 80px;
-            height: 80px;
-            background: radial-gradient(circle at 30% 30%, #ff6b6b, #c44569);
-            top: 10%;
-            right: 10%;
-            animation-delay: 0s;
-        }
-
-        .planet-2 {
-            width: 60px;
-            height: 60px;
-            background: radial-gradient(circle at 30% 30%, #4834d4, #686de0);
-            bottom: 20%;
-            left: 15%;
-            animation-delay: -10s;
-        }
-
-        .planet-3 {
-            width: 40px;
-            height: 40px;
-            background: radial-gradient(circle at 30% 30%, #ff9ff3, #f368e0);
-            top: 60%;
-            right: 20%;
-            animation-delay: -5s;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-20px) rotate(180deg); }
+            background: transparent;
         }
 
         .quiz-container {
@@ -487,14 +426,12 @@
             #questionText {
                 font-size: 1.2em;
             }
-
-            .planet {
-                display: none;
-            }
         }
     </style>
 </head>
 <body>
+    <canvas id="space-canvas"></canvas>
+
     <div class="quiz-container">
         <div class="quiz-header">
             <h1>🧠 Cosmic Quiz</h1>
@@ -510,7 +447,7 @@
             <div id="quizContainer">
                 <div id="quizIntro">
                     <h2>🚀 Ready for Launch?</h2>
-                    <p>Challenge yourself with questions about space missions, astronomical phenomena, and cosmic history. Questions are dynamically generated based on the selected date's space events!</p>
+                    <p>Challenge yourself with questions about space missions, astronomical phenomena, and cosmic history. Questions are dynamically generated based on the selected date's space events.</p>
                     <button id="startQuizBtn">🌟 Start Cosmic Quiz</button>
                 </div>
 
@@ -541,6 +478,67 @@
             </div>
         </section>
     </div>
+
+    <!-- Starfield Animation Script -->
+    <script>
+        // Starfield animation
+        const canvas = document.getElementById('space-canvas');
+        const ctx = canvas.getContext('2d');
+        let stars = [];
+        let animationId;
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        function createStars() {
+            stars = [];
+            const numStars = Math.min(200, Math.floor((canvas.width * canvas.height) / 5000));
+            for (let i = 0; i < numStars; i++) {
+                stars.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    size: Math.random() * 2 + 0.5,
+                    speed: Math.random() * 0.5 + 0.1,
+                    opacity: Math.random() * 0.8 + 0.2
+                });
+            }
+        }
+
+        function animateStars() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            stars.forEach(star => {
+                star.y += star.speed;
+                if (star.y > canvas.height) {
+                    star.y = -5;
+                    star.x = Math.random() * canvas.width;
+                }
+                ctx.beginPath();
+                ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 255, 255, ${star.opacity})`;
+                ctx.fill();
+            });
+            animationId = requestAnimationFrame(animateStars);
+        }
+
+        function initStarfield() {
+            resizeCanvas();
+            createStars();
+            animateStars();
+        }
+
+        // Initialize starfield on DOM ready
+        document.addEventListener("DOMContentLoaded", () => {
+            initStarfield();
+        });
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            createStars();
+        });
+    </script>
 
     <script>
         class CosmicQuiz {
