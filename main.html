@@ -58,14 +58,41 @@
 </div>
 
 
-    <main class="content" id="main-content">
-      <div class="loading" id="loading">
-        <div class="spinner"></div>
-        <p>Scanning the cosmos for today's stories...</p>
-      </div>
-    </main>
+    <div class="content">
+  <main class="main-content" id="main-content">
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <p>Scanning the cosmos for today's stories...</p>
+    </div>
+  </main>
+
+  <aside id="upcoming-launches" class="sidebar-section">
+    <!-- Upcoming launches will appear here -->
+  </aside>
+</div>
+
   </div>
 
   <script src="script.js"></script>
+<aside id="upcoming-launches" class="sidebar-section">
+  <!-- Upcoming launches will go here -->
+</aside>
+<script>
+  window.addEventListener("DOMContentLoaded", () => {
+    const dateInput = document.getElementById("date-input");
+    const saved = localStorage.getItem("cosmic-selected-date");
+
+    if (saved) {
+      dateInput.value = saved;
+      fetchCosmicNews();
+    }
+
+    dateInput.addEventListener("change", () => {
+      localStorage.setItem("cosmic-selected-date", dateInput.value);
+      fetchCosmicNews();
+    });
+  });
+</script>
+
 </body>
 </html>
