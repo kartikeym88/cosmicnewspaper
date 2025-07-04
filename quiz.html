@@ -5,7 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🧠 Cosmic Quiz - Test Your Space Knowledge</title>
     <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Playfair+Display:wght@400;700;900&family=Crimson+Text:wght@400;600&display=swap" rel="stylesheet" />
 
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <style>
         * {
             box-sizing: border-box;
@@ -15,7 +18,7 @@
             margin: 0;
             padding: 0;
             background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
-            font-family: 'Exo 2', sans-serif;
+            font-family: 'Orbitron', 'Crimson Text', serif;
             min-height: 100vh;
             position: relative;
             overflow-x: hidden;
@@ -44,11 +47,12 @@
             text-align: center;
             color: white;
             margin-bottom: 30px;
-            background: linear-gradient(135deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.1) 100%);
+            background: linear-gradient(135deg, #000211 60%, #1a1a2e 100%);
             padding: 40px 20px;
             border-radius: 20px;
             border: 2px solid rgba(255,255,255,0.1);
             backdrop-filter: blur(10px);
+            box-shadow: 0 0 60px #00eaff33
         }
 
         .quiz-header h1 {
@@ -78,10 +82,11 @@
             text-align: center;
             margin-bottom: 30px;
             padding: 20px;
-            background: rgba(255,255,255,0.05);
+            background: linear-gradient(135deg, #000211 60%, #1a1a2e 100%);
             border-radius: 15px;
             border: 1px solid rgba(255,255,255,0.1);
             backdrop-filter: blur(10px);
+            box-shadow: 0 0 60px #00eaff33
         }
 
         .date-selector label {
@@ -109,17 +114,19 @@
         }
 
         #quizSection {
-            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+            background: linear-gradient(135deg, #000211 60%, #1a1a2e 100%);
             border-radius: 20px;
             padding: 40px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            box-shadow: 0 0 60px #00eaff33;
             border: 1px solid rgba(255,255,255,0.1);
             backdrop-filter: blur(15px);
+            
         }
 
         #quizContainer {
             max-width: 700px;
             margin: 0 auto;
+            
         }
 
         #quizIntro {
@@ -141,6 +148,7 @@
             font-size: 1.2em;
             margin-bottom: 30px;
             line-height: 1.6;
+            
         }
 
         #startQuizBtn, #retakeQuizBtn {
@@ -199,6 +207,7 @@
             margin: 25px 0;
             border: 1px solid rgba(255,255,255,0.1);
             backdrop-filter: blur(10px);
+            
         }
 
         #questionText {
@@ -427,6 +436,16 @@
                 font-size: 1.2em;
             }
         }
+        .glow-border {
+            border: 2px solid rgba(64, 224, 255, 0.4);
+            border-radius: 20px;
+            box-shadow: 0 0 25px rgba(64, 224, 255, 0.6),
+                    0 0 40px rgba(64, 224, 255, 0.3),
+                    0 0 60px rgba(64, 224, 255, 0.2);
+            transition: box-shadow 0.3s ease;
+        }
+        
+
     </style>
 </head>
 <body>
