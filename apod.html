@@ -107,7 +107,13 @@
 
   <script>
     const API_KEY = "bT8GecFG6RdFe2ywdkafe1wMsMwmoXNcyMGi5CqO";
-    const selectedDate = localStorage.getItem("cosmic-selected-date") || new Date().toISOString().split("T")[0];
+    const selectedDate = localStorage.getItem("cosmic-selected-date");
+if (!selectedDate) {
+  document.getElementById("apod-title").innerText = "No date selected";
+  document.getElementById("apod-explanation").innerText = "Please return to the main page and select a date.";
+  throw new Error("No APOD date available.");
+}
+
     const canvas = document.getElementById('space-canvas');
     const ctx = canvas.getContext('2d');
     let stars = [];
