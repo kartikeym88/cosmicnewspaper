@@ -250,3 +250,41 @@ body {
   font-size: 0.95em;
 }
 
+.event-item button {
+  background-color: #00eaff;
+  color: #0d0d1c;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-weight: bold;
+  margin-top: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.event-item button:hover {
+  background-color: #00c3d4;
+  transform: scale(1.05);
+}
+.sidebar-section {
+  padding-left: 20px;
+}
+
+.sidebar-section .event-item {
+  border: 1px solid #2d355b;
+  padding: 12px;
+  border-radius: 10px;
+  margin-bottom: 15px;
+  background-color: #111730;
+  transition: background-color 0.2s;
+}
+
+.sidebar-section .event-item:hover {
+  background-color: #192040;
+}
+
+.sidebar-section .event-item h4 {
+  margin: 0 0 8px;
+  font-size: 1.05rem;
+  color: #00eaff;
+}
