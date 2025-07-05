@@ -93,7 +93,7 @@
 <body>
 
   <div class="milestone-section">
-    <h1 class="page-heading">🚀 Space Milestones for Today</h1>
+    <h1 class="page-heading">🚀 Space Milestones</h1>
     <div id="events-container">Loading...</div>
 
     <div class="back-link">
@@ -102,70 +102,79 @@
   </div>
 
   <script>
-  async function fetchAllSpaceMilestones() {
-    const selected = localStorage.getItem("cosmic-selected-date") || new Date().toISOString().split("T")[0];
-    const [year, month, day] = selected.split("-");
-    const url = `https://en.wikipedia.org/api/rest_v1/feed/onthisday/events/${month}/${day}`;
+    async function fetchAllSpaceMilestones() {
+      const selected = localStorage.getItem("cosmic-selected-date") || new Date().toISOString().split("T")[0];
+      const [year, month, day] = selected.split("-");
+      const url = `https://en.wikipedia.org/api/rest_v1/feed/onthisday/events/${month}/${day}`;
 
-    const res = await fetch(url);
-    const data = await res.json();
+      const res = await fetch(url);
+      const data = await res.json();
 
-    const keywords = [
-      "space", "nasa", "apollo", "moon", "mars", "venus", "astronaut", "cosmonaut", "shuttle",
-      "galileo", "hubble", "rover", "lander", "saturn", "voyager", "new horizons", "iss", "sputnik",
-      "gagarin", "rocket", "launch", "orbit", "mission"
-    ];
+      const textKeywords = [
+        "space", "nasa", "apollo", "moon", "mars", "venus", "astronaut", "cosmonaut", "shuttle",
+        "galileo", "hubble", "rover", "lander", "saturn", "voyager", "new horizons", "iss", "sputnik",
+        "gagarin", "rocket", "launch", "orbit", "mission"
+      ];
 
-    const spaceEvents = [];
+      const excludeKeywords = [
+        "navy", "ship", "fleet", "submarine", "battle", "war", "military", "revolution", "government",
+        "election", "politician", "death", "murder", "conflict", "soldier", "weapons", "airliner",
+        "music", "film", "pageant", "beauty", "queen", "festival", "actor", "actress", "cinema",
+        "president", "football", "cricket", "soccer", "sports", "race", "olympics"
+      ];
 
-    for (const ev of data.events) {
-      const title = ev.pages?.[0]?.title;
-      const eventYear = ev.year;
-      const text = ev.text.toLowerCase();
-      const isSpace = keywords.some(k => text.includes(k));
-      if (!isSpace || !title) continue;
+      const spaceEvents = [];
 
-      const summaryRes = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`);
-      const summary = await summaryRes.json();
+      for (const ev of data.events) {
+        const title = ev.pages?.[0]?.title;
+        const eventYear = ev.year;
+        const text = ev.text.toLowerCase();
 
-      spaceEvents.push({
-        title: title.replace(/_/g, ' '),
-        description: summary.extract || ev.text,
-        imageUrl: summary.thumbnail?.source || null,
-        date: `${eventYear}-${month}-${day}`
-      });
-    }
+        const keywordMatch = textKeywords.filter(k => text.includes(k)).length >= 2;
+        const excludeMatch = excludeKeywords.some(k => text.includes(k));
+        if (!keywordMatch || !title || excludeMatch) continue;
 
-    return spaceEvents;
-  }
+        const summaryRes = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`);
+        const summary = await summaryRes.json();
 
-  async function renderEvents() {
-    const container = document.getElementById("events-container");
-    container.innerHTML = "<p>Loading events...</p>";
-
-    try {
-      const events = await fetchAllSpaceMilestones();
-      if (events.length === 0) {
-        container.innerHTML = "<p>No space milestones found for this date.</p>";
-        return;
+        spaceEvents.push({
+          title: title.replace(/_/g, ' '),
+          description: summary.extract || ev.text,
+          imageUrl: summary.thumbnail?.source || null,
+          date: `${eventYear}-${month}-${day}`
+        });
       }
 
-      container.innerHTML = events.map(e => `
-        <div class="event-card">
-          <div class="event-title">${e.title}</div>
-          <div class="event-date">📅 ${e.date}</div>
-          ${e.imageUrl ? `<img src="${e.imageUrl}" class="milestone-image" />` : ""}
-          <div class="milestone-description">${e.description}</div>
-        </div>
-      `).join("");
-    } catch (err) {
-      container.innerHTML = "<p>Failed to load space milestones.</p>";
-      console.error(err);
+      return spaceEvents;
     }
-  }
 
-  renderEvents();
-</script>
+    async function renderEvents() {
+      const container = document.getElementById("events-container");
+      container.innerHTML = "<p>Loading events...</p>";
+
+      try {
+        const events = await fetchAllSpaceMilestones();
+        if (events.length === 0) {
+          container.innerHTML = "<p>No space milestones found for this date.</p>";
+          return;
+        }
+
+        container.innerHTML = events.map(e => `
+          <div class="event-card">
+            <div class="event-title">${e.title}</div>
+            <div class="event-date">📅 ${e.date}</div>
+            ${e.imageUrl ? `<img src="${e.imageUrl}" class="milestone-image" />` : ""}
+            <div class="milestone-description">${e.description}</div>
+          </div>
+        `).join("");
+      } catch (err) {
+        container.innerHTML = "<p>Failed to load space milestones.</p>";
+        console.error(err);
+      }
+    }
+
+    renderEvents();
+  </script>
 
 </body>
 </html>
