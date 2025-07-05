@@ -3,8 +3,6 @@ const launchAPI = "https://ll.thespacedevs.com/2.2.0/launch/";
 const memoryStorage = {};
 let cachedLaunchData = null;
 
-document.getElementById("date-input").max = new Date().toISOString().split("T")[0];
-
 async function fetchCosmicNews() {
   const date = document.getElementById("date-input").value;
   const main = document.getElementById("main-content");
@@ -107,13 +105,14 @@ async function fetchWikipediaSpaceMilestones(date) {
   const categoryKeywords = [
     "space", "apollo", "nasa", "astronomy", "moon", "mars", "planet", "astronaut",
     "rocket", "shuttle", "cosmonaut", "satellite", "spaceflight", "mission",
-    "exploration", "lunar", "orbiter"
+    "exploration", "lunar", "orbiter", "observatory", "cosmos", "spacex"
   ];
 
   const excludeKeywords = [
-    "navy", "ship", "fleet", "submarine", "battle", "war", "tank",
-    "military", "revolution", "government", "election", "conflict",
-    "soldier", "weapons", "battleship", "airliner", "train", "railway"
+    "navy", "ship", "fleet", "submarine", "battle", "war", "tank", "military",
+    "revolution", "government", "election", "conflict", "soldier", "weapons",
+    "battleship", "airliner", "train", "railway", "music", "festival", "beauty",
+    "queen", "sports", "cricket", "football", "actor", "actress", "tv", "president", "death"
   ];
 
   async function getPageCategories(title) {
@@ -154,28 +153,30 @@ async function fetchWikipediaSpaceMilestones(date) {
 
   for (const ev of events) {
     const text = ev.text.toLowerCase();
-    const textMatch = textKeywords.some(k => text.includes(k));
-    const excludeMatch = excludeKeywords.some(k => text.includes(k));
-    const pg = ev.pages?.[0];
-    if (!pg?.title || excludeMatch) continue;
+    const title = ev.pages?.[0]?.title;
+    if (!title) continue;
 
-    const cats = await getPageCategories(pg.title);
-    const categoryMatch = cats.some(cat =>
+    const textMatchCount = textKeywords.filter(k => text.includes(k)).length;
+    const excludeMatch = excludeKeywords.some(k => text.includes(k));
+    if (excludeMatch || textMatchCount < 2) continue;
+
+    const categories = await getPageCategories(title);
+    const categoryMatch = categories.some(cat =>
       categoryKeywords.some(k => cat.toLowerCase().includes(k))
     );
-    const excludeCatMatch = cats.some(cat =>
+    const excludeCatMatch = categories.some(cat =>
       excludeKeywords.some(k => cat.toLowerCase().includes(k))
     );
 
-    if ((textMatch || categoryMatch) && !excludeCatMatch) {
-      const fullDesc = await getIntroParagraph(pg.title);
-      spaceEvents.push({
-        label: ev.text,
-        description: fullDesc || pg.description || "Space milestone",
-        type: "Space Milestone",
-        date: `${ev.year}-${month}-${day}`
-      });
-    }
+    if (!categoryMatch || excludeCatMatch) continue;
+
+    const fullDesc = await getIntroParagraph(title);
+    spaceEvents.push({
+      label: ev.text,
+      description: fullDesc || "Space milestone",
+      type: "Space Milestone",
+      date: `${ev.year}-${month}-${day}`
+    });
   }
 
   memoryStorage[key] = spaceEvents;
@@ -199,7 +200,7 @@ function renderAll(apod, launches, wikiEvents, upcomingLaunches, date) {
     </div>
   ` : "";
 
-  const milestoneHTML = wikiEvents.length > 0 ? wikiEvents.map((e, i) => `
+  const milestoneHTML = wikiEvents.length > 0 ? wikiEvents.map(e => `
     <div class="event-item">
       <h4>📜 ${e.label}</h4>
       <p><strong>Type:</strong> ${e.type}</p>
@@ -245,15 +246,12 @@ function renderAll(apod, launches, wikiEvents, upcomingLaunches, date) {
 
 window.addEventListener("DOMContentLoaded", () => {
   const dateInput = document.getElementById("date-input");
+  if (!dateInput) return;
+
+  dateInput.max = new Date().toISOString().split("T")[0];
   const saved = localStorage.getItem("cosmic-selected-date");
 
-  setInterval(() => {
-    localStorage.removeItem("upcoming-launches");
-    localStorage.removeItem("upcoming-launches-time");
-    fetchCosmicNews();
-  }, 30 * 60 * 1000); // Refresh every 30 mins
-
-  if (saved) {
+  if (saved && /^\d{4}-\d{2}-\d{2}$/.test(saved)) {
     dateInput.value = saved;
     fetchCosmicNews();
   }
@@ -262,4 +260,10 @@ window.addEventListener("DOMContentLoaded", () => {
     localStorage.setItem("cosmic-selected-date", dateInput.value);
     fetchCosmicNews();
   });
+
+  setInterval(() => {
+    localStorage.removeItem("upcoming-launches");
+    localStorage.removeItem("upcoming-launches-time");
+    fetchCosmicNews();
+  }, 30 * 60 * 1000);
 });
