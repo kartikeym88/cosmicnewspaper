@@ -122,25 +122,54 @@
             width: 0%;
             transition: width 0.3s;
         }
+        .back-link {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 1000;
+}
+
+.back-link a {
+    font-family: 'Orbitron', sans-serif;
+    color: #00eaff;
+    font-weight: bold;
+    font-size: 1.1em;
+    text-decoration: underline;
+    text-shadow: 0 0 8px #00eaff;
+    transition: text-shadow 0.3s ease;
+}
+
+.back-link a:hover {
+    text-shadow: 0 0 16px #00eaff, 0 0 30px #00eaff;
+}
+
     </style>
 </head>
 <body>
     <div id="gameContainer">
-        <div id="instructions">
-            🚀 Use ARROW KEYS to move • SPACEBAR to shoot • Reach planets to learn facts and take quizzes! 🪐
-        </div>
-        <canvas id="gameCanvas" width="800" height="600"></canvas>
-        <div id="ui">
-            <div class="ui-item">Score: <span id="score">0</span></div>
-            <div class="ui-item">Lives: <span id="lives">3</span></div>
-            <div class="ui-item">Level: <span id="level">1</span></div>
-            <div class="ui-item">Planets: <span id="planets">0</span>/8</div>
-            <div class="ui-item">Enemies: <span id="enemies">0</span></div>
-        </div>
-        <div id="progressBar">
-            <div id="progressFill"></div>
-        </div>
+    <div class="back-link">
+        <a href="main.html">← Back to Main Page</a>
     </div>
+    
+    <div id="instructions">
+        🚀 Use ARROW KEYS to move • SPACEBAR to shoot • Reach planets to learn facts and take quizzes! 🪐
+    </div>
+    
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    
+    <div id="ui">
+        <div class="ui-item">Score: <span id="score">0</span></div>
+        <div class="ui-item">Lives: <span id="lives">3</span></div>
+        <div class="ui-item">Level: <span id="level">1</span></div>
+        <div class="ui-item">Planets: <span id="planets">0</span>/8</div>
+        <div class="ui-item">Enemies: <span id="enemies">0</span></div>
+    </div>
+    
+    <div id="progressBar">
+        <div id="progressFill"></div>
+    </div>
+</div>
+
     
     <div id="gameOver">
         <h2>🌌 MISSION COMPLETE 🌌</h2>
