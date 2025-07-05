@@ -12,12 +12,9 @@ The Cosmic Times is a dynamic, interactive, and gamified web app that brings spa
 
 - **Front Page Headline**: NASA’s Astronomy Picture of the Day (APOD)
 - **Launch Reports**: Rockets, missions, and agencies launched on that day
-- **On This Day in Space**: Space-related historical events via Wikipedia
-- **Editor’s Note**: Tracks user streaks and awards badges
-- **My Cosmic Archive**: Users can save and revisit editions they've explored
-- **Gamification**: Badges and streaks make space exploration fun and habit-forming
-- **Print Support**: Export any edition as a printable PDF
-
+- **Space Discoveries and Milestones**: Space-related historical events via Wikipedia
+- **Gamification**: A game to make space exploration fun and habit-forming
+- **Quiz**: To make learning interactive and fun while testing knowledge
 ---
 
 ## 🛠️ Installation & Setup
@@ -61,18 +58,16 @@ npm run build
 - **CSS Grid** for newspaper-style layout
 - **Framer Motion** for animations
 - **Google Fonts + FontAwesome / Lucide** for styling
-- **LocalStorage** for user streaks and badge data
+- **LocalStorage** for data storage
 
 ### APIs
 - **NASA APOD API** – Astronomy Picture of the Day
 - **Launch Library 2.0** – Rocket launches by date
-- **Wikipedia REST API** – “On This Day” space events
-- *(Optional)* ESA archives, In-the-Sky.org for extra data
+- **Wikipedia On This Day API** – “On This Day” space events
+- **SpaceDev**- For more launch data
 
 ### Tools
-- **Figma / Penpot** – UI design
-- **html2pdf.js** – For exporting editions as PDFs
-- **Tippy.js (optional)** – Hover tooltips for badges
+- **Figma / Penpot** – UI desig
 - **particles.js / SVG.js (optional)** – Starfield effects
 - **Vite / Webpack** – Optional build optimization
 - **Lighthouse / PageSpeed Insights** – Performance testing
@@ -82,18 +77,17 @@ npm run build
 ## 📦 Folder Structure
 
 ```
-/public
-/src
-  /components
-  /assets
-  /utils
-  App.js
-  main.js
-.env
-index.html
-README.md
-package.json
-```
+/
+├── README.md
+├── apod.html
+├── game.html
+├── history.html
+├── index.html           # Main entry point 
+├── launch_history.json  # Local data store for launch events
+├── main.html
+├── quiz.html            # Space trivia or gamification
+├── script.js            # Main JavaScripct Logic
+├── style.css
 
 ---
 
@@ -101,7 +95,7 @@ package.json
 
 - User login & cloud sync
 - Badge tooltips with trivia
-- Space quiz mini-game
+- Make versions downloadable
 - Dark mode toggle
 - Sound FX on badge unlocks
 
@@ -113,12 +107,6 @@ By treating each day as the front page of a space history newspaper, The Cosmic 
 - Build a **daily learning habit**
 - Make astronomy **personal and nostalgic**
 - Encourage users to **collect, explore, and celebrate** cosmic events
-
----
-
-## 📜 License
-
-This project is open source and free to use under the [MIT License](LICENSE).
 
 ---
 
