@@ -1,6 +1,7 @@
 const API_KEY = "bT8GecFG6RdFe2ywdkafe1wMsMwmoXNcyMGi5CqO";
 const launchAPI = "https://ll.thespacedevs.com/2.2.0/launch/";
 const memoryStorage = {};
+let cachedLaunchData = null;
 
 document.getElementById("date-input").max = new Date().toISOString().split("T")[0];
 
@@ -46,21 +47,12 @@ async function fetchCosmicNews() {
 }
 
 async function fetchPastLaunches(date) {
-  const res = await fetch("launch_history.json");
-  if (!res.ok) throw new Error("Could not load launch history data.");
-  const data = await res.json();
-
-  const [, month, day] = date.split("-");
-  const launches = [];
-
-  for (const [fullDate, entries] of Object.entries(data)) {
-    const [, m, d] = fullDate.split("-");
-    if (m === month && d === day) {
-      launches.push(...entries);
-    }
+  if (!cachedLaunchData) {
+    const res = await fetch("launch_history.json");
+    if (!res.ok) throw new Error("Could not load launch history data.");
+    cachedLaunchData = await res.json();
   }
-
-  return launches;
+  return cachedLaunchData[date] || [];
 }
 
 async function fetchAPOD(date) {
@@ -101,6 +93,7 @@ async function fetchUpcomingLaunches() {
   return filtered;
 }
 
+// ✅ REPLACED with better filtering
 async function fetchWikipediaSpaceMilestones(date) {
   const [year, month, day] = date.split("-");
   const key = `wiki-${month}-${day}`;
@@ -108,20 +101,22 @@ async function fetchWikipediaSpaceMilestones(date) {
 
   const textKeywords = [
     "space", "nasa", "apollo", "moon", "mars", "venus", "astronaut", "cosmonaut", "shuttle",
-    "galileo", "hubble", "rover", "lander", "saturn", "voyager", "new horizons",
-    "pluto", "solar system", "iss", "spacecraft", "launch", "sputnik", "gagarin"
+    "galileo", "hubble", "rover", "lander", "saturn", "voyager", "new horizons", "pluto",
+    "solar system", "iss", "spacecraft", "launch", "sputnik", "gagarin", "rocket", "orbit",
+    "probe", "cosmos", "telescope", "spacex", "soyuz", "starlink", "mission"
   ];
 
   const categoryKeywords = [
-    "space", "apollo", "nasa", "astronomy", "moon", "mars", "planet", "astronaut",
-    "rocket", "shuttle", "cosmonaut", "satellite", "spaceflight", "mission",
-    "exploration", "lunar", "orbiter"
+    "space", "apollo", "nasa", "astronomy", "moon", "mars", "planet", "astronaut", "rocket",
+    "shuttle", "cosmonaut", "satellite", "spaceflight", "mission", "exploration", "lunar",
+    "orbiter", "cosmos", "spacex", "iss", "observatory"
   ];
 
   const excludeKeywords = [
-    "navy", "ship", "fleet", "submarine", "battle", "war", "tank",
-    "military", "revolution", "government", "election", "conflict",
-    "soldier", "weapons", "battleship", "airliner", "train", "railway"
+    "navy", "ship", "fleet", "submarine", "battle", "war", "military", "revolution", "government",
+    "election", "politician", "death", "murder", "conflict", "soldier", "weapons", "airliner",
+    "music", "film", "pageant", "beauty", "queen", "festival", "actor", "actress", "cinema",
+    "president", "football", "cricket", "soccer", "sports", "race", "olympics"
   ];
 
   async function getPageCategories(title) {
@@ -162,35 +157,38 @@ async function fetchWikipediaSpaceMilestones(date) {
 
   for (const ev of events) {
     const text = ev.text.toLowerCase();
-    const textMatch = textKeywords.some(k => text.includes(k));
-    const excludeMatch = excludeKeywords.some(k => text.includes(k));
-    const pg = ev.pages?.[0];
-    if (!pg?.title || excludeMatch) continue;
+    const title = ev.pages?.[0]?.title;
+    const eventYear = ev.year;
 
-    const cats = await getPageCategories(pg.title);
-    const categoryMatch = cats.some(cat =>
+    if (!title) continue;
+
+    const keywordMatchCount = textKeywords.filter(k => text.includes(k)).length;
+    const excludeMatch = excludeKeywords.some(k => text.includes(k));
+    if (excludeMatch || keywordMatchCount < 2) continue;
+
+    const categories = await getPageCategories(title);
+    const categoryMatch = categories.some(cat =>
       categoryKeywords.some(k => cat.toLowerCase().includes(k))
     );
-    const excludeCatMatch = cats.some(cat =>
+    const categoryExclude = categories.some(cat =>
       excludeKeywords.some(k => cat.toLowerCase().includes(k))
     );
 
-    if ((textMatch || categoryMatch) && !excludeCatMatch) {
-      const fullDesc = await getIntroParagraph(pg.title);
-      spaceEvents.push({
-        label: ev.text,
-        description: fullDesc || pg.description || "Space milestone",
-        type: "Space Milestone",
-        date: `${ev.year}-${month}-${day}`
-      });
-    }
+    if (!categoryMatch || categoryExclude) continue;
+
+    const description = await getIntroParagraph(title);
+
+    spaceEvents.push({
+      label: title.replace(/_/g, " "),
+      description: description || ev.text,
+      type: "Space Milestone",
+      date: `${eventYear}-${month}-${day}`
+    });
   }
 
   memoryStorage[key] = spaceEvents;
   return spaceEvents;
 }
-
-// function toggleReadMore(btn) {}
 
 function renderAll(apod, launches, wikiEvents, upcomingLaunches, date) {
   const main = document.getElementById("main-content");
@@ -199,6 +197,15 @@ function renderAll(apod, launches, wikiEvents, upcomingLaunches, date) {
   const format = d => new Date(d).toLocaleDateString("en-US", {
     year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit"
   });
+
+  const apodSection = apod ? `
+    <div class="headline-section">
+      <h2 class="headline">Astronomy Picture of the Day</h2>
+      <img src="${apod.url}" class="apod-image">
+      <p class="byline">${apod.title || "No title"}</p>
+      <a href="apod.html" class="read-more-btn">Know more</a>
+    </div>
+  ` : "";
 
   const milestoneHTML = wikiEvents.length > 0 ? wikiEvents.map((e, i) => `
     <div class="event-item">
@@ -210,12 +217,7 @@ function renderAll(apod, launches, wikiEvents, upcomingLaunches, date) {
   `).join("") : "<p>No space milestones for this date.</p>";
 
   main.innerHTML = `
-    <div class="headline-section">
-      <h2 class="headline">Astronomy Picture of the Day</h2>
-      ${apod?.url ? `<img src="${apod.url}" class="apod-image">` : ""}
-      <p class="byline">${apod?.title || "No title"}</p>
-      <p class="article-content">${apod?.explanation || "No explanation available."}</p>
-    </div>
+    ${apodSection}
 
     <div class="event-section">
       <h3 class="section-title">🚀 Launch History</h3>
