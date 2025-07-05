@@ -108,20 +108,22 @@ async function fetchWikipediaSpaceMilestones(date) {
 
   const textKeywords = [
     "space", "nasa", "apollo", "moon", "mars", "venus", "astronaut", "cosmonaut", "shuttle",
-    "galileo", "hubble", "rover", "lander", "saturn", "voyager", "new horizons",
-    "pluto", "solar system", "iss", "spacecraft", "launch", "sputnik", "gagarin"
+    "galileo", "hubble", "rover", "lander", "saturn", "voyager", "new horizons", "pluto",
+    "solar system", "iss", "spacecraft", "launch", "sputnik", "gagarin", "rocket", "orbit",
+    "probe", "cosmos", "telescope", "spacex", "soyuz", "starlink", "mission"
   ];
 
   const categoryKeywords = [
-    "space", "apollo", "nasa", "astronomy", "moon", "mars", "planet", "astronaut",
-    "rocket", "shuttle", "cosmonaut", "satellite", "spaceflight", "mission",
-    "exploration", "lunar", "orbiter"
+    "space", "apollo", "nasa", "astronomy", "moon", "mars", "planet", "astronaut", "rocket",
+    "shuttle", "cosmonaut", "satellite", "spaceflight", "mission", "exploration", "lunar",
+    "orbiter", "cosmos", "spacex", "iss", "observatory"
   ];
 
   const excludeKeywords = [
-    "navy", "ship", "fleet", "submarine", "battle", "war", "tank",
-    "military", "revolution", "government", "election", "conflict",
-    "soldier", "weapons", "battleship", "airliner", "train", "railway"
+    "navy", "ship", "fleet", "submarine", "battle", "war", "military", "revolution", "government",
+    "election", "politician", "death", "murder", "conflict", "soldier", "weapons", "airliner",
+    "music", "film", "pageant", "beauty", "queen", "festival", "actor", "actress", "cinema",
+    "president", "football", "cricket", "soccer", "sports", "race", "olympics"
   ];
 
   async function getPageCategories(title) {
@@ -162,10 +164,10 @@ async function fetchWikipediaSpaceMilestones(date) {
 
   for (const ev of events) {
     const text = ev.text.toLowerCase();
-    const textMatch = textKeywords.some(k => text.includes(k));
+    const matchKeywordCount = textKeywords.filter(k => text.includes(k)).length;
     const excludeMatch = excludeKeywords.some(k => text.includes(k));
     const pg = ev.pages?.[0];
-    if (!pg?.title || excludeMatch) continue;
+    if (!pg?.title || excludeMatch || matchKeywordCount < 2) continue;
 
     const cats = await getPageCategories(pg.title);
     const categoryMatch = cats.some(cat =>
@@ -175,7 +177,7 @@ async function fetchWikipediaSpaceMilestones(date) {
       excludeKeywords.some(k => cat.toLowerCase().includes(k))
     );
 
-    if ((textMatch || categoryMatch) && !excludeCatMatch) {
+    if (categoryMatch && !excludeCatMatch) {
       const fullDesc = await getIntroParagraph(pg.title);
       spaceEvents.push({
         label: ev.text,
@@ -189,6 +191,7 @@ async function fetchWikipediaSpaceMilestones(date) {
   memoryStorage[key] = spaceEvents;
   return spaceEvents;
 }
+
 
 // function toggleReadMore(btn) {}
 
