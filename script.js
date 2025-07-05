@@ -32,13 +32,13 @@ async function fetchCosmicNews() {
   try {
     upcomingLaunches = await fetchUpcomingLaunches();
   } catch (err) {
-    console.error("SpaceDevs upcoming error:", err);
+    console.error("Upcoming launches error:", err);
   }
 
   try {
     pastLaunches = await fetchPastLaunches(date);
   } catch (err) {
-    console.error("Past launches error:", err);
+    console.error("Launch history error:", err);
   }
 
   renderAll(apod, pastLaunches, spaceMilestones, upcomingLaunches, date);
@@ -50,7 +50,18 @@ async function fetchPastLaunches(date) {
     if (!res.ok) throw new Error("Could not load launch history data.");
     cachedLaunchData = await res.json();
   }
-  return cachedLaunchData[date] || [];
+
+  const [, month, day] = date.split("-");
+  const results = [];
+
+  for (const [fullDate, entries] of Object.entries(cachedLaunchData)) {
+    const [, m, d] = fullDate.split("-");
+    if (m === month && d === day) {
+      results.push(...entries);
+    }
+  }
+
+  return results;
 }
 
 async function fetchAPOD(date) {
@@ -158,7 +169,7 @@ async function fetchWikipediaSpaceMilestones(date) {
 
     const textMatchCount = textKeywords.filter(k => text.includes(k)).length;
     const excludeMatch = excludeKeywords.some(k => text.includes(k));
-    if (excludeMatch || textMatchCount < 2) continue;
+    if (excludeMatch || textMatchCount === 0) continue;
 
     const categories = await getPageCategories(title);
     const categoryMatch = categories.some(cat =>
@@ -209,20 +220,22 @@ function renderAll(apod, launches, wikiEvents, upcomingLaunches, date) {
     </div>
   `).join("") : "<p>No space milestones for this date.</p>";
 
+  const launchesHTML = launches.length > 0 ? launches.map(l => `
+    <div class="event-item">
+      <h4>🚀 ${l.name}</h4>
+      <p><strong>Provider:</strong> ${l.provider}</p>
+      <p><strong>Window:</strong> ${new Date(l.window_start).toLocaleString()}</p>
+      <p><strong>Location:</strong> ${l.location}</p>
+      <p>${l.description}</p>
+    </div>
+  `).join("") : "<p>No launch history available.</p>";
+
   main.innerHTML = `
     ${apodSection}
 
     <div class="event-section">
       <h3 class="section-title">🚀 Launch History</h3>
-      ${launches.map(l => `
-        <div class="event-item">
-          <h4>🚀 ${l.name}</h4>
-          <p><strong>Provider:</strong> ${l.provider}</p>
-          <p><strong>Window:</strong> ${new Date(l.window_start).toLocaleString()}</p>
-          <p><strong>Location:</strong> ${l.location}</p>
-          <p>${l.description}</p>
-        </div>
-      `).join("")}
+      ${launchesHTML}
     </div>
 
     <div class="event-section">
