@@ -1,7 +1,6 @@
 const API_KEY = "bT8GecFG6RdFe2ywdkafe1wMsMwmoXNcyMGi5CqO";
 const launchAPI = "https://ll.thespacedevs.com/2.2.0/launch/";
 const memoryStorage = {};
-let cachedLaunchData = null;
 
 document.getElementById("date-input").max = new Date().toISOString().split("T")[0];
 
@@ -47,12 +46,21 @@ async function fetchCosmicNews() {
 }
 
 async function fetchPastLaunches(date) {
-  if (!cachedLaunchData) {
-    const res = await fetch("launch_history.json");
-    if (!res.ok) throw new Error("Could not load launch history data.");
-    cachedLaunchData = await res.json();
+  const res = await fetch("launch_history.json");
+  if (!res.ok) throw new Error("Could not load launch history data.");
+  const data = await res.json();
+
+  const [, month, day] = date.split("-");
+  const launches = [];
+
+  for (const [fullDate, entries] of Object.entries(data)) {
+    const [, m, d] = fullDate.split("-");
+    if (m === month && d === day) {
+      launches.push(...entries);
+    }
   }
-  return cachedLaunchData[date] || [];
+
+  return launches;
 }
 
 async function fetchAPOD(date) {
@@ -93,7 +101,7 @@ async function fetchUpcomingLaunches() {
   return filtered;
 }
 
-// ✅ REPLACED with better filtering
+// ✅ Exact match from history.html for accurate space milestone filtering
 async function fetchWikipediaSpaceMilestones(date) {
   const [year, month, day] = date.split("-");
   const key = `wiki-${month}-${day}`;
@@ -198,15 +206,6 @@ function renderAll(apod, launches, wikiEvents, upcomingLaunches, date) {
     year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit"
   });
 
-  const apodSection = apod ? `
-    <div class="headline-section">
-      <h2 class="headline">Astronomy Picture of the Day</h2>
-      <img src="${apod.url}" class="apod-image">
-      <p class="byline">${apod.title || "No title"}</p>
-      <a href="apod.html" class="read-more-btn">Know more</a>
-    </div>
-  ` : "";
-
   const milestoneHTML = wikiEvents.length > 0 ? wikiEvents.map((e, i) => `
     <div class="event-item">
       <h4>📜 ${e.label}</h4>
@@ -217,7 +216,12 @@ function renderAll(apod, launches, wikiEvents, upcomingLaunches, date) {
   `).join("") : "<p>No space milestones for this date.</p>";
 
   main.innerHTML = `
-    ${apodSection}
+    <div class="headline-section">
+      <h2 class="headline">Astronomy Picture of the Day</h2>
+      ${apod?.url ? `<img src="${apod.url}" class="apod-image">` : ""}
+      <p class="byline">${apod?.title || "No title"}</p>
+      <p class="article-content">${apod?.explanation || "No explanation available."}</p>
+    </div>
 
     <div class="event-section">
       <h3 class="section-title">🚀 Launch History</h3>
@@ -259,7 +263,7 @@ window.addEventListener("DOMContentLoaded", () => {
     localStorage.removeItem("upcoming-launches");
     localStorage.removeItem("upcoming-launches-time");
     fetchCosmicNews();
-  }, 30 * 60 * 1000); // Refresh every 30 mins
+  }, 30 * 60 * 1000);
 
   if (saved) {
     dateInput.value = saved;
