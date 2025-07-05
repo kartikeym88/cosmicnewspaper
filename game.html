@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Space Shooter - Solar System Explorer</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            color: #0f0;
+            font-family: 'Courier New', monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+        
+        #gameContainer {
+            text-align: center;
+        }
+        
+        canvas {
+            border: 2px solid #0f0;
+            background: linear-gradient(to bottom, #000428, #004e92);
+        }
+        
+        #ui {
+            margin-top: 10px;
+            font-size: 18px;
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+        }
+        
+        .ui-item {
+            margin: 5px;
+            padding: 5px 10px;
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid #0f0;
+            border-radius: 5px;
+        }
+        
+        #gameOver, #levelComplete, #quiz {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.95);
+            border: 3px solid #0f0;
+            padding: 30px;
+            text-align: center;
+            display: none;
+            border-radius: 10px;
+            box-shadow: 0 0 20px #0f0;
+            max-width: 600px;
+            z-index: 1000;
+        }
+        
+        button {
+            background: #000;
+            color: #0f0;
+            border: 2px solid #0f0;
+            padding: 10px 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 5px;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            background: #0f0;
+            color: #000;
+            box-shadow: 0 0 10px #0f0;
+        }
+        
+        #instructions {
+            margin-bottom: 10px;
+            font-size: 14px;
+            background: rgba(0, 255, 0, 0.1);
+            padding: 10px;
+            border-radius: 5px;
+        }
+        
+        .quiz-option {
+            display: block;
+            width: 100%;
+            margin: 10px 0;
+            padding: 15px;
+            text-align: left;
+        }
+        
+        .quiz-option:hover {
+            background: rgba(0, 255, 0, 0.2);
+        }
+        
+        .correct {
+            background: rgba(0, 255, 0, 0.3) !important;
+        }
+        
+        .incorrect {
+            background: rgba(255, 0, 0, 0.3) !important;
+        }
+        
+        #progressBar {
+            width: 100%;
+            height: 20px;
+            background: #333;
+            border: 1px solid #0f0;
+            margin: 10px 0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        #progressFill {
+            height: 100%;
+            background: linear-gradient(to right, #0f0, #0ff);
+            width: 0%;
+            transition: width 0.3s;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <div id="instructions">
+            🚀 Use ARROW KEYS to move • SPACEBAR to shoot • Reach planets to learn facts and take quizzes! 🪐
+        </div>
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+        <div id="ui">
+            <div class="ui-item">Score: <span id="score">0</span></div>
+            <div class="ui-item">Lives: <span id="lives">3</span></div>
+            <div class="ui-item">Level: <span id="level">1</span></div>
+            <div class="ui-item">Planets: <span id="planets">0</span>/8</div>
+            <div class="ui-item">Enemies: <span id="enemies">0</span></div>
+        </div>
+        <div id="progressBar">
+            <div id="progressFill"></div>
+        </div>
+    </div>
+    
+    <div id="gameOver">
+        <h2>🌌 MISSION COMPLETE 🌌</h2>
+        <p>Final Score: <span id="finalScore">0</span></p>
+        <p>Planets Explored: <span id="finalPlanets">0</span>/8</p>
+        <button onclick="restartGame()">🚀 New Mission</button>
+    </div>
+    
+    <div id="levelComplete">
+        <h2 id="planetTitle">🪐 PLANET REACHED</h2>
+        <p id="planetFact"></p>
+        <button onclick="startQuiz()">🧠 Take Quiz</button>
+        <button onclick="continueGame()">⏭️ Continue Mission</button>
+    </div>
+    
+    <div id="quiz">
+        <h3 id="quizQuestion"></h3>
+        <div id="quizOptions"></div>
+        <p id="quizResult"></p>
+        <button id="nextQuizBtn" onclick="nextQuestion()" style="display: none;">Next Question</button>
+        <button id="finishQuizBtn" onclick="finishQuiz()" style="display: none;">Continue Mission</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Game state
+        let gameState = {
+            score: 0,
+            lives: 3,
+            level: 1,
+            gameRunning: true,
+            showPlanetInfo: false,
+            currentPlanet: null,
+            planetsVisited: 0,
+            enemiesDefeated: 0,
+            currentQuiz: null,
+            quizScore: 0,
+            isPaused: false,
+            alienSpawnRate: 0.02,
+            difficultyMultiplier: 1
+        };
+        
+        // Player spaceship
+        const player = {
+            x: canvas.width / 2 - 25,
+            y: canvas.height - 80,
+            width: 50,
+            height: 40,
+            speed: 8
+        };
+        
+        // Game objects
+        let bullets = [];
+        let aliens = [];
+        let stars = [];
+        let planets = [];
+        let particles = [];
+        
+        // Planet data with enhanced facts and quizzes
+        const planetData = [
+            {
+                name: "Mercury",
+                color: "#8c7853",
+                size: 30,
+                fact: "Mercury is the smallest planet and closest to the Sun! It has extreme temperatures - 800°F during the day and -300°F at night. A day on Mercury lasts 176 Earth days, but a year is only 88 Earth days!",
+                rings: false,
+                quiz: [
+                    {
+                        question: "How long is a day on Mercury?",
+                        options: ["24 hours", "88 Earth days", "176 Earth days", "1 Earth year"],
+                        correct: 2
+                    },
+                    {
+                        question: "What makes Mercury special among planets?",
+                        options: ["It has rings", "It's the hottest planet", "It's closest to the Sun", "It has the most moons"],
+                        correct: 2
+                    }
+                ]
+            },
+            {
+                name: "Venus",
+                color: "#ffc649",
+                size: 35,
+                fact: "Venus is the hottest planet at 900°F due to its thick atmosphere of carbon dioxide! It rotates backwards (retrograde) and has crushing atmospheric pressure 90 times stronger than Earth's. It rains sulfuric acid!",
+                rings: false,
+                quiz: [
+                    {
+                        question: "Why is Venus the hottest planet?",
+                        options: ["It's closest to the Sun", "Thick CO2 atmosphere", "It has volcanoes", "It has no water"],
+                        correct: 1
+                    },
+                    {
+                        question: "What's unique about Venus's rotation?",
+                        options: ["It's very fast", "It rotates backwards", "It doesn't rotate", "It wobbles"],
+                        correct: 1
+                    }
+                ]
+            },
+            {
+                name: "Mars",
+                color: "#cd5c5c",
+                size: 32,
+                fact: "Mars, the Red Planet, has the largest volcano in our solar system - Olympus Mons, which is 3 times taller than Mount Everest! It has polar ice caps, seasons like Earth, and evidence of ancient river valleys.",
+                rings: false,
+                quiz: [
+                    {
+                        question: "What is Olympus Mons?",
+                        options: ["A crater", "The largest volcano", "A mountain range", "A canyon"],
+                        correct: 1
+                    },
+                    {
+                        question: "Why is Mars called the Red Planet?",
+                        options: ["It's hot", "Iron oxide (rust) on surface", "Red clouds", "Red ice caps"],
+                        correct: 1
+                    }
+                ]
+            },
+            {
+                name: "Jupiter",
+                color: "#d8ca9d",
+                size: 60,
+                fact: "Jupiter is the largest planet - so massive it could fit all other planets inside it! Its Great Red Spot is a storm bigger than Earth that has raged for over 300 years. It has 95 moons and acts as a cosmic vacuum cleaner!",
+                rings: true,
+                quiz: [
+                    {
+                        question: "How many planets could fit inside Jupiter?",
+                        options: ["All other planets", "Just Earth", "5 planets", "None"],
+                        correct: 0
+                    },
+                    {
+                        question: "What is the Great Red Spot?",
+                        options: ["A moon", "A giant storm", "A crater", "A volcano"],
+                        correct: 1
+                    }
+                ]
+            },
+            {
+                name: "Saturn",
+                color: "#fab981",
+                size: 55,
+                fact: "Saturn is less dense than water - it would float in a giant bathtub! Its spectacular rings are made of billions of ice and rock particles. It has 146 moons, including Titan which has lakes of liquid methane!",
+                rings: true,
+                quiz: [
+                    {
+                        question: "What are Saturn's rings made of?",
+                        options: ["Gas", "Ice and rock particles", "Dust only", "Liquid water"],
+                        correct: 1
+                    },
+                    {
+                        question: "What's special about Saturn's density?",
+                        options: ["Denser than gold", "Less dense than water", "Same as Earth", "Densest planet"],
+                        correct: 1
+                    }
+                ]
+            },
+            {
+                name: "Uranus",
+                color: "#4fd0e4",
+                size: 45,
+                fact: "Uranus is the tilted planet - it rotates on its side at 98 degrees! This ice giant has 27 known moons and faint rings. It's the coldest planet with temperatures reaching -370°F, and it takes 84 Earth years to orbit the Sun!",
+                rings: true,
+                quiz: [
+                    {
+                        question: "What makes Uranus unique?",
+                        options: ["It's the hottest", "It rotates on its side", "It has no moons", "It's closest to Sun"],
+                        correct: 1
+                    },
+                    {
+                        question: "How long is a year on Uranus?",
+                        options: ["1 Earth year", "42 Earth years", "84 Earth years", "168 Earth years"],
+                        correct: 2
+                    }
+                ]
+            },
+            {
+                name: "Neptune",
+                color: "#4b70dd",
+                size: 44,
+                fact: "Neptune has the strongest winds in the solar system at 1,200 mph - faster than the speed of sound! This ice giant takes 165 Earth years to orbit the Sun and has 16 known moons, including Triton which orbits backwards!",
+                rings: false,
+                quiz: [
+                    {
+                        question: "What's special about Neptune's winds?",
+                        options: ["They're the calmest", "Strongest in solar system", "They blow upward", "They're invisible"],
+                        correct: 1
+                    },
+                    {
+                        question: "How fast are Neptune's winds?",
+                        options: ["100 mph", "500 mph", "1,200 mph", "2,000 mph"],
+                        correct: 2
+                    }
+                ]
+            },
+            {
+                name: "Pluto",
+                color: "#967117",
+                size: 25,
+                fact: "Pluto is a dwarf planet smaller than Earth's moon! It has a heart-shaped feature called Tombaugh Regio and 5 moons. Its largest moon Charon is so big that Pluto and Charon orbit each other like a double planet system!",
+                rings: false,
+                quiz: [
+                    {
+                        question: "What is Pluto classified as?",
+                        options: ["A planet", "A dwarf planet", "A moon", "An asteroid"],
+                        correct: 1
+                    },
+                    {
+                        question: "How many moons does Pluto have?",
+                        options: ["None", "1", "5", "10"],
+                        correct: 2
+                    }
+                ]
+            }
+        ];
+        
+        // Input handling
+        const keys = {};
+        
+        // Create stars for background
+        function createStars() {
+            for (let i = 0; i < 100; i++) {
+                stars.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    speed: Math.random() * 2 + 1,
+                    size: Math.random() * 2
+                });
+            }
+        }
+        
+        // Create particle effects
+        function createParticles(x, y, color, count = 10) {
+            for (let i = 0; i < count; i++) {
+                particles.push({
+                    x: x,
+                    y: y,
+                    vx: (Math.random() - 0.5) * 8,
+                    vy: (Math.random() - 0.5) * 8,
+                    color: color,
+                    life: 30,
+                    maxLife: 30,
+                    size: Math.random() * 3 + 1
+                });
+            }
+        }
+        
+        // Spawn aliens with level-based difficulty
+        function spawnAlien() {
+            if (Math.random() < gameState.alienSpawnRate * gameState.difficultyMultiplier) {
+                aliens.push({
+                    x: Math.random() * (canvas.width - 40),
+                    y: -40,
+                    width: 40,
+                    height: 30,
+                    speed: Math.random() * 3 + 2 + gameState.level * 0.5,
+                    health: 1,
+                    type: Math.random() < 0.3 ? 'tough' : 'normal'
+                });
+            }
+        }
+        
+        // Spawn planets based on level progress
+        function spawnPlanet() {
+            if (planets.length === 0 && gameState.enemiesDefeated >= gameState.level * 5) {
+                const planetIndex = (gameState.level - 1) % planetData.length;
+                const planetInfo = planetData[planetIndex];
+                planets.push({
+                    x: Math.random() * (canvas.width - planetInfo.size * 2) + planetInfo.size,
+                    y: -planetInfo.size,
+                    width: planetInfo.size * 2,
+                    height: planetInfo.size * 2,
+                    speed: 1,
+                    data: planetInfo
+                });
+            }
+        }
+        
+        // Event listeners
+        document.addEventListener('keydown', (e) => {
+            keys[e.code] = true;
+            if (e.code === 'Space') {
+                e.preventDefault();
+                shoot();
+            }
+        });
+        
+        document.addEventListener('keyup', (e) => {
+            keys[e.code] = false;
+        });
+        
+        // Shooting with enhanced bullets
+        function shoot() {
+            if (gameState.gameRunning && !gameState.isPaused) {
+                bullets.push({
+                    x: player.x + player.width / 2 - 3,
+                    y: player.y,
+                    width: 6,
+                    height: 15,
+                    speed: 12,
+                    damage: 1
+                });
+                
+                // Double shot power-up at higher levels
+                if (gameState.level >= 3) {
+                    bullets.push({
+                        x: player.x + player.width / 2 - 8,
+                        y: player.y,
+                        width: 6,
+                        height: 15,
+                        speed: 12,
+                        damage: 1
+                    });
+                    bullets.push({
+                        x: player.x + player.width / 2 + 2,
+                        y: player.y,
+                        width: 6,
+                        height: 15,
+                        speed: 12,
+                        damage: 1
+                    });
+                }
+            }
+        }
+        
+        // Enhanced collision detection
+        function checkCollision(rect1, rect2) {
+            return rect1.x < rect2.x + rect2.width &&
+                   rect1.x + rect1.width > rect2.x &&
+                   rect1.y < rect2.y + rect2.height &&
+                   rect1.y + rect1.height > rect2.y;
+        }
+        
+        // Quiz system
+        function startQuiz() {
+            if (gameState.currentPlanet && gameState.currentPlanet.quiz) {
+                gameState.currentQuiz = {
+                    questions: [...gameState.currentPlanet.quiz],
+                    currentIndex: 0,
+                    score: 0
+                };
+                gameState.isPaused = true;
+                document.getElementById('levelComplete').style.display = 'none';
+                showQuizQuestion();
+            }
+        }
+        
+        function showQuizQuestion() {
+            const quiz = gameState.currentQuiz;
+            const question = quiz.questions[quiz.currentIndex];
+            
+            document.getElementById('quizQuestion').textContent = question.question;
+            const optionsDiv = document.getElementById('quizOptions');
+            optionsDiv.innerHTML = '';
+            
+            question.options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.textContent = option;
+                button.className = 'quiz-option';
+                button.onclick = () => answerQuestion(index);
+                optionsDiv.appendChild(button);
+            });
+            
+            document.getElementById('quizResult').textContent = '';
+            document.getElementById('nextQuizBtn').style.display = 'none';
+            document.getElementById('finishQuizBtn').style.display = 'none';
+            document.getElementById('quiz').style.display = 'block';
+        }
+        
+        function answerQuestion(selectedIndex) {
+            const quiz = gameState.currentQuiz;
+            const question = quiz.questions[quiz.currentIndex];
+            const buttons = document.querySelectorAll('.quiz-option');
+            
+            buttons.forEach((btn, index) => {
+                if (index === question.correct) {
+                    btn.classList.add('correct');
+                } else if (index === selectedIndex && selectedIndex !== question.correct) {
+                    btn.classList.add('incorrect');
+                }
+                btn.disabled = true;
+            });
+            
+            if (selectedIndex === question.correct) {
+                quiz.score++;
+                gameState.score += 25;
+                document.getElementById('quizResult').textContent = '✅ Correct! Great job!';
+            } else {
+                document.getElementById('quizResult').textContent = '❌ Not quite right. Keep learning!';
+            }
+            
+            if (quiz.currentIndex < quiz.questions.length - 1) {
+                document.getElementById('nextQuizBtn').style.display = 'inline-block';
+            } else {
+                document.getElementById('finishQuizBtn').style.display = 'inline-block';
+            }
+            
+            updateUI();
+        }
+        
+        function nextQuestion() {
+            gameState.currentQuiz.currentIndex++;
+            showQuizQuestion();
+        }
+        
+        function finishQuiz() {
+            const quiz = gameState.currentQuiz;
+            const scorePercent = (quiz.score / quiz.questions.length) * 100;
+            
+            if (scorePercent >= 50) {
+                gameState.score += 50; // Bonus for passing quiz
+                createParticles(player.x + player.width/2, player.y + player.height/2, '#00ff00', 20);
+            }
+            
+            document.getElementById('quiz').style.display = 'none';
+            gameState.isPaused = false;
+            continueGame();
+        }
+        
+        function continueGame() {
+            document.getElementById('levelComplete').style.display = 'none';
+            gameState.isPaused = false;
+            gameState.showPlanetInfo = false;
+            gameState.currentPlanet = null;
+        }
+        
+        // Update game logic
+        function update() {
+            if (!gameState.gameRunning || gameState.isPaused) return;
+            
+            // Player movement
+            if (keys['ArrowLeft'] && player.x > 0) {
+                player.x -= player.speed;
+            }
+            if (keys['ArrowRight'] && player.x < canvas.width - player.width) {
+                player.x += player.speed;
+            }
+            if (keys['ArrowUp'] && player.y > canvas.height / 2) {
+                player.y -= player.speed;
+            }
+            if (keys['ArrowDown'] && player.y < canvas.height - player.height) {
+                player.y += player.speed;
+            }
+            
+            // Update stars
+            stars.forEach(star => {
+                star.y += star.speed;
+                if (star.y > canvas.height) {
+                    star.y = 0;
+                    star.x = Math.random() * canvas.width;
+                }
+            });
+            
+            // Update particles
+            particles = particles.filter(particle => {
+                particle.x += particle.vx;
+                particle.y += particle.vy;
+                particle.life--;
+                return particle.life > 0;
+            });
+            
+            // Update bullets
+            bullets = bullets.filter(bullet => {
+                bullet.y -= bullet.speed;
+                return bullet.y > -bullet.height;
+            });
+            
+            // Spawn and update aliens
+            spawnAlien();
+            aliens = aliens.filter(alien => {
+                alien.y += alien.speed;
+                return alien.y < canvas.height + 40;
+            });
+            
+            // Spawn and update planets
+            spawnPlanet();
+            planets = planets.filter(planet => {
+                planet.y += planet.speed;
+                return planet.y < canvas.height + planet.height;
+            });
+            
+            // Check bullet-alien collisions
+            bullets.forEach((bullet, bulletIndex) => {
+                aliens.forEach((alien, alienIndex) => {
+                    if (checkCollision(bullet, alien)) {
+                        bullets.splice(bulletIndex, 1);
+                        alien.health -= bullet.damage;
+                        
+                        if (alien.health <= 0) {
+                            aliens.splice(alienIndex, 1);
+                            gameState.score += alien.type === 'tough' ? 20 : 10;
+                            gameState.enemiesDefeated++;
+                            createParticles(alien.x + alien.width/2, alien.y + alien.height/2, '#ff4500', 8);
+                        }
+                        updateUI();
+                    }
+                });
+            });
+            
+            // Check player-alien collisions
+            aliens.forEach((alien, alienIndex) => {
+                if (checkCollision(player, alien)) {
+                    aliens.splice(alienIndex, 1);
+                    gameState.lives--;
+                    createParticles(player.x + player.width/2, player.y + player.height/2, '#ff0000', 15);
+                    updateUI();
+                    
+                    if (gameState.lives <= 0) {
+                        gameOver();
+                    }
+                }
+            });
+            
+            // Check player-planet collisions
+            planets.forEach((planet, planetIndex) => {
+                if (checkCollision(player, planet)) {
+                    planets.splice(planetIndex, 1);
+                    gameState.currentPlanet = planet.data;
+                    gameState.showPlanetInfo = true;
+                    gameState.planetsVisited++;
+                    gameState.level++;
+                    gameState.score += 100;
+                    gameState.isPaused = true;
+                    
+                    // Increase difficulty
+                    gameState.difficultyMultiplier = 1 + (gameState.level - 1) * 0.2;
+                    
+                    createParticles(planet.x + planet.width/2, planet.y + planet.height/2, planet.data.color, 25);
+                    
+                    document.getElementById('planetTitle').textContent = `🪐 ${planet.data.name.toUpperCase()} REACHED!`;
+                    document.getElementById('planetFact').textContent = planet.data.fact;
+                    document.getElementById('levelComplete').style.display = 'block';
+                    
+                    updateUI();
+                    
+                    // Check for game completion
+                    if (gameState.planetsVisited >= 8) {
+                        setTimeout(() => {
+                            gameOver();
+                        }, 3000);
+                    }
+                }
+            });
+            
+            // Update progress bar
+            const progress = Math.min((gameState.enemiesDefeated / (gameState.level * 5)) * 100, 100);
+            document.getElementById('progressFill').style.width = progress + '%';
+        }
+        
+        // Enhanced render function
+        function render() {
+            // Clear canvas with animated gradient
+            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            gradient.addColorStop(0, '#000428');
+            gradient.addColorStop(0.5, '#004e92');
+            gradient.addColorStop(1, '#000428');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw animated stars
+            ctx.fillStyle = '#fff';
+            stars.forEach(star => {
+                ctx.globalAlpha = 0.5 + Math.sin(Date.now() * 0.01 + star.x) * 0.3;
+                ctx.beginPath();
+                ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            ctx.globalAlpha = 1;
+            
+            // Draw particles
+            particles.forEach(particle => {
+                ctx.globalAlpha = particle.life / particle.maxLife;
+                ctx.fillStyle = particle.color;
+                ctx.beginPath();
+                ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            ctx.globalAlpha = 1;
+            
+            // Draw enhanced player spaceship
+            const centerX = player.x + player.width / 2;
+            const centerY = player.y + player.height / 2;
+            
+            // Ship glow effect
+            ctx.shadowColor = '#00ffff';
+            ctx.shadowBlur = 10;
+            
+            // Main body
+            ctx.fillStyle = '#c0c0c0';
+            ctx.beginPath();
+            ctx.moveTo(centerX, player.y);
+            ctx.lineTo(player.x + 10, player.y + 35);
+            ctx.lineTo(player.x + 40, player.y + 35);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Cockpit
+            ctx.fillStyle = '#00ffff';
+            ctx.beginPath();
+            ctx.arc(centerX, player.y + 12, 8, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Wings
+            ctx.fillStyle = '#808080';
+            ctx.fillRect(player.x + 5, player.y + 20, 15, 8);
+            ctx.fillRect(player.x + 30, player.y + 20, 15, 8);
+            
+            // Enhanced engine effects
+            ctx.fillStyle = '#ff4500';
+            ctx.fillRect(player.x + 12, player.y + 35, 6, 8);
+            ctx.fillRect(player.x + 32, player.y + 35, 6, 8);
+            
+            if (keys['ArrowUp'] || keys['ArrowDown'] || keys['ArrowLeft'] || keys['ArrowRight']) {
+                ctx.fillStyle = '#ff6600';
+                const flameHeight = 8 + Math.random() * 8;
+                ctx.fillRect(player.x + 13, player.y + 43, 4, flameHeight);
+                ctx.fillRect(player.x + 33, player.y + 43, 4, flameHeight);
+                
+                ctx.fillStyle = '#ffff00';
+                ctx.fillRect(player.x + 14, player.y + 43, 2, flameHeight - 2);
+                ctx.fillRect(player.x + 34, player.y + 43, 2, flameHeight - 2);
+            }
+            
+            ctx.shadowBlur = 0;
+            
+            // Draw enhanced bullets
+            bullets.forEach(bullet => {
+                ctx.shadowColor = '#00ff00';
+                ctx.shadowBlur = 5;
+                ctx.fillStyle = '#00ff00';
+                ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+                ctx.shadowBlur = 0;
+            });
+            
+            // Draw enhanced aliens
+            aliens.forEach(alien => {
+                const alienCenterX = alien.x + alien.width / 2;
+                const alienCenterY = alien.y + alien.height / 2;
+                
+                // Alien glow
+                ctx.shadowColor = alien.type === 'tough' ? '#ff0000' : '#8a2be2';
+                ctx.shadowBlur = 8;
+                
+                // Main body
+                ctx.fillStyle = alien.type === 'tough' ? '#ff4500' : '#8a2be2';
+                ctx.beginPath();
+                ctx.ellipse(alienCenterX, alienCenterY, 18, 12, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Eyes
+                ctx.fillStyle = '#ff0000';
+                ctx.beginPath();
+                ctx.arc(alien.x + 12, alien.y + 8, 4, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(alien.x + 28, alien.y + 8, 4, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Eye pupils
+                ctx.fillStyle = '#000';
+                ctx.beginPath();
+                ctx.arc(alien.x + 12, alien.y + 8, 2, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(alien.x + 28, alien.y + 8, 2, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Antennae
+                ctx.strokeStyle = alien.type === 'tough' ? '#ff4500' : '#8a2be2';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(alien.x + 8, alien.y);
+                ctx.lineTo(alien.x + 5, alien.y - 8);
+                ctx.moveTo(alien.x + 32, alien.y);
+                ctx.lineTo(alien.x + 35, alien.y - 8);
+                ctx.stroke();
+                
+                // Antennae tips
+                ctx.fillStyle = alien.type === 'tough' ? '#ffff00' : '#ff00ff';
+                ctx.beginPath();
+                ctx.arc(alien.x + 5, alien.y - 8, 2, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(alien.x + 35, alien.y - 8, 2, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.shadowBlur = 0;
+            });
+            
+            // Draw enhanced planets
+            planets.forEach(planet => {
+                const centerX = planet.x + planet.width / 2;
+                const centerY = planet.y + planet.height / 2;
+                const radius = planet.data.size;
+                
+                // Planet glow
+                ctx.shadowColor = planet.data.color;
+                ctx.shadowBlur = 15;
+                
+                // Planet body
+                ctx.fillStyle = planet.data.color;
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Planet surface details
+                ctx.fillStyle = 'rgba(0,0,0,0.3)';
+                ctx.beginPath();
+                ctx.arc(centerX - radius/3, centerY - radius/3, radius/4, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(centerX + radius/4, centerY + radius/4, radius/6, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Rings for gas giants
+                if (planet.data.rings) {
+                    ctx.strokeStyle = 'rgba(200,200,200,0.8)';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.ellipse(centerX, centerY, radius * 1.5, radius * 0.3, 0, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.ellipse(centerX, centerY, radius * 1.8, radius * 0.4, 0, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+                
+                // Planet atmosphere glow
+                const atmosphereGradient = ctx.createRadialGradient(centerX, centerY, radius, centerX, centerY, radius * 1.5);
+                atmosphereGradient.addColorStop(0, 'rgba(255,255,255,0)');
+                atmosphereGradient.addColorStop(1, 'rgba(255,255,255,0.4)');
+                ctx.fillStyle = atmosphereGradient;
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius * 1.5, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Planet name label
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 16px Arial';
+                ctx.textAlign = 'center';
+                ctx.shadowBlur = 5;
+                ctx.shadowColor = '#000000';
+                ctx.fillText(planet.data.name, centerX, centerY + radius + 25);
+                
+                ctx.shadowBlur = 0;
+            });
+            
+            // Draw UI overlays
+            if (gameState.isPaused && !gameState.showPlanetInfo) {
+                ctx.fillStyle = 'rgba(0,0,0,0.5)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 48px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('PAUSED', canvas.width / 2, canvas.height / 2);
+            }
+            
+            // Draw level indicator
+            if (planets.length > 0) {
+                ctx.fillStyle = 'rgba(0,255,0,0.8)';
+                ctx.font = 'bold 24px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('🎯 REACH THE PLANET!', canvas.width / 2, 50);
+            }
+            
+            // Draw progress indicator
+            const enemiesNeeded = gameState.level * 5 - gameState.enemiesDefeated;
+            if (enemiesNeeded > 0 && planets.length === 0) {
+                ctx.fillStyle = 'rgba(255,255,0,0.8)';
+                ctx.font = 'bold 20px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(`Defeat ${enemiesNeeded} more enemies to unlock next planet!`, canvas.width / 2, 50);
+            }
+        }
+        
+        // Game loop
+        function gameLoop() {
+            update();
+            render();
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // Update UI
+        function updateUI() {
+            document.getElementById('score').textContent = gameState.score;
+            document.getElementById('lives').textContent = gameState.lives;
+            document.getElementById('level').textContent = gameState.level;
+            document.getElementById('planets').textContent = gameState.planetsVisited;
+            document.getElementById('enemies').textContent = gameState.enemiesDefeated;
+        }
+        
+        // Game over
+        function gameOver() {
+            gameState.gameRunning = false;
+            document.getElementById('finalScore').textContent = gameState.score;
+            document.getElementById('finalPlanets').textContent = gameState.planetsVisited;
+            
+            if (gameState.planetsVisited >= 8) {
+                document.getElementById('gameOver').innerHTML = `
+                    <h2>🎉 CONGRATULATIONS! 🎉</h2>
+                    <p>You've completed the Solar System Explorer!</p>
+                    <p>Final Score: ${gameState.score}</p>
+                    <p>All 8 Planets Visited! 🌌</p>
+                    <p>You're now a Space Explorer Master!</p>
+                    <button onclick="restartGame()">🚀 New Adventure</button>
+                `;
+            }
+            
+            document.getElementById('gameOver').style.display = 'block';
+        }
+        
+        // Restart game
+        function restartGame() {
+            gameState = {
+                score: 0,
+                lives: 3,
+                level: 1,
+                gameRunning: true,
+                showPlanetInfo: false,
+                currentPlanet: null,
+                planetsVisited: 0,
+                enemiesDefeated: 0,
+                currentQuiz: null,
+                quizScore: 0,
+                isPaused: false,
+                alienSpawnRate: 0.02,
+                difficultyMultiplier: 1
+            };
+            
+            player.x = canvas.width / 2 - 25;
+            player.y = canvas.height - 80;
+            bullets = [];
+            aliens = [];
+            planets = [];
+            particles = [];
+            
+            updateUI();
+            document.getElementById('gameOver').style.display = 'none';
+            document.getElementById('levelComplete').style.display = 'none';
+            document.getElementById('quiz').style.display = 'none';
+            document.getElementById('progressFill').style.width = '0%';
+        }
+        
+        // Pause/Resume functionality
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'KeyP' || e.code === 'Escape') {
+                if (gameState.gameRunning && !document.getElementById('levelComplete').style.display && !document.getElementById('quiz').style.display) {
+                    gameState.isPaused = !gameState.isPaused;
+                }
+            }
+        });
+        
+        // Initialize game
+        createStars();
+        updateUI();
+        gameLoop();
+        
+        // Add some initial instructions
+        setTimeout(() => {
+            if (gameState.gameRunning && gameState.planetsVisited === 0) {
+                console.log("Welcome to Solar System Explorer! Defeat enemies to unlock planets!");
+            }
+        }, 2000);
+    </script>
+</body>
+</html>
