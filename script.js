@@ -1,17 +1,18 @@
 const API_KEY = "bT8GecFG6RdFe2ywdkafe1wMsMwmoXNcyMGi5CqO";
 const launchAPI = "https://ll.thespacedevs.com/2.2.0/launch/";
 const memoryStorage = {};
+let cachedLaunchData = null;
 
 document.getElementById("date-input").max = new Date().toISOString().split("T")[0];
 
 async function fetchCosmicNews() {
   const date = document.getElementById("date-input").value;
   const main = document.getElementById("main-content");
-  main.innerHTML = 
+  main.innerHTML = `
     <div class="loading">
       <div class="spinner"></div>
       <p>Scanning the cosmos for ${date}...</p>
-    </div>;
+    </div>`;
 
   let apod = null;
   let spaceMilestones = [];
@@ -46,28 +47,19 @@ async function fetchCosmicNews() {
 }
 
 async function fetchPastLaunches(date) {
-  const res = await fetch("launch_history.json");
-  if (!res.ok) throw new Error("Could not load launch history data.");
-  const data = await res.json();
-
-  const [, month, day] = date.split("-");
-  const launches = [];
-
-  for (const [fullDate, entries] of Object.entries(data)) {
-    const [, m, d] = fullDate.split("-");
-    if (m === month && d === day) {
-      launches.push(...entries);
-    }
+  if (!cachedLaunchData) {
+    const res = await fetch("launch_history.json");
+    if (!res.ok) throw new Error("Could not load launch history data.");
+    cachedLaunchData = await res.json();
   }
-
-  return launches;
+  return cachedLaunchData[date] || [];
 }
 
 async function fetchAPOD(date) {
-  const key = apod-${date};
+  const key = `apod-${date}`;
   if (memoryStorage[key]) return memoryStorage[key];
 
-  const res = await fetch(https://api.nasa.gov/planetary/apod?date=${date}&api_key=${API_KEY});
+  const res = await fetch(`https://api.nasa.gov/planetary/apod?date=${date}&api_key=${API_KEY}`);
   if (!res.ok) throw new Error("Failed to fetch APOD.");
   const data = await res.json();
   memoryStorage[key] = data;
@@ -77,14 +69,14 @@ async function fetchAPOD(date) {
 async function fetchUpcomingLaunches() {
   const key = "upcoming-launches";
   const cached = localStorage.getItem(key);
-  const cachedTime = localStorage.getItem(${key}-time);
+  const cachedTime = localStorage.getItem(`${key}-time`);
   const now = Date.now();
 
   if (cached && cachedTime && now - Number(cachedTime) < 60 * 60 * 1000) {
     return JSON.parse(cached);
   }
 
-  const res = await fetch(${launchAPI}upcoming/?limit=20&ordering=net);
+  const res = await fetch(`${launchAPI}upcoming/?limit=20&ordering=net`);
   if (!res.ok) throw new Error("Failed to fetch upcoming launches.");
   const data = await res.json();
 
@@ -97,13 +89,13 @@ async function fetchUpcomingLaunches() {
   });
 
   localStorage.setItem(key, JSON.stringify(filtered));
-  localStorage.setItem(${key}-time, String(now));
+  localStorage.setItem(`${key}-time`, String(now));
   return filtered;
 }
 
 async function fetchWikipediaSpaceMilestones(date) {
   const [year, month, day] = date.split("-");
-  const key = wiki-${month}-${day};
+  const key = `wiki-${month}-${day}`;
   if (memoryStorage[key]) return memoryStorage[key];
 
   const textKeywords = [
@@ -125,7 +117,7 @@ async function fetchWikipediaSpaceMilestones(date) {
   ];
 
   async function getPageCategories(title) {
-    const url = https://en.wikipedia.org/w/api.php?action=query&prop=categories&format=json&origin=*&titles=${encodeURIComponent(title)};
+    const url = `https://en.wikipedia.org/w/api.php?action=query&prop=categories&format=json&origin=*&titles=${encodeURIComponent(title)}`;
     try {
       const res = await fetch(url);
       const json = await res.json();
@@ -138,9 +130,9 @@ async function fetchWikipediaSpaceMilestones(date) {
   }
 
   async function getIntroParagraph(title) {
-    const key = summary-${title};
+    const key = `summary-${title}`;
     if (memoryStorage[key]) return memoryStorage[key];
-    const url = https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)};
+    const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`;
     try {
       const res = await fetch(url);
       const json = await res.json();
@@ -152,7 +144,7 @@ async function fetchWikipediaSpaceMilestones(date) {
     }
   }
 
-  const url = https://en.wikipedia.org/api/rest_v1/feed/onthisday/events/${month}/${day};
+  const url = `https://en.wikipedia.org/api/rest_v1/feed/onthisday/events/${month}/${day}`;
   const res = await fetch(url);
   if (!res.ok) throw new Error("Failed to fetch Wikipedia events.");
   const json = await res.json();
@@ -181,7 +173,7 @@ async function fetchWikipediaSpaceMilestones(date) {
         label: ev.text,
         description: fullDesc || pg.description || "Space milestone",
         type: "Space Milestone",
-        date: ${ev.year}-${month}-${day}
+        date: `${ev.year}-${month}-${day}`
       });
     }
   }
@@ -189,8 +181,6 @@ async function fetchWikipediaSpaceMilestones(date) {
   memoryStorage[key] = spaceEvents;
   return spaceEvents;
 }
-
-// function toggleReadMore(btn) {}
 
 function renderAll(apod, launches, wikiEvents, upcomingLaunches, date) {
   const main = document.getElementById("main-content");
@@ -200,30 +190,30 @@ function renderAll(apod, launches, wikiEvents, upcomingLaunches, date) {
     year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit"
   });
 
-  const apodSection = apod ? 
+  const apodSection = apod ? `
     <div class="headline-section">
       <h2 class="headline">Astronomy Picture of the Day</h2>
       <img src="${apod.url}" class="apod-image">
       <p class="byline">${apod.title || "No title"}</p>
       <a href="apod.html" class="read-more-btn">Know more</a>
     </div>
-   : "";
+  ` : "";
 
-  const milestoneHTML = wikiEvents.length > 0 ? wikiEvents.map((e, i) => 
+  const milestoneHTML = wikiEvents.length > 0 ? wikiEvents.map((e, i) => `
     <div class="event-item">
       <h4>📜 ${e.label}</h4>
       <p><strong>Type:</strong> ${e.type}</p>
       <p><strong>Date:</strong> ${format(e.date)}</p>
       <a href="history.html?event=${encodeURIComponent(e.label)}" class="read-more-btn">Read more</a>
     </div>
-  ).join("") : "<p>No space milestones for this date.</p>";
+  `).join("") : "<p>No space milestones for this date.</p>";
 
-  main.innerHTML = 
+  main.innerHTML = `
     ${apodSection}
 
     <div class="event-section">
       <h3 class="section-title">🚀 Launch History</h3>
-      ${launches.map(l => 
+      ${launches.map(l => `
         <div class="event-item">
           <h4>🚀 ${l.name}</h4>
           <p><strong>Provider:</strong> ${l.provider}</p>
@@ -231,26 +221,26 @@ function renderAll(apod, launches, wikiEvents, upcomingLaunches, date) {
           <p><strong>Location:</strong> ${l.location}</p>
           <p>${l.description}</p>
         </div>
-      ).join("")}
+      `).join("")}
     </div>
 
     <div class="event-section">
       <h3 class="section-title">📜 Space Discoveries & Milestones</h3>
       ${milestoneHTML}
     </div>
-  ;
+  `;
 
-  upcomingDiv.innerHTML = 
+  upcomingDiv.innerHTML = `
     <h3 class="section-title">Upcoming Launches</h3>
-    ${upcomingLaunches.map(l => 
+    ${upcomingLaunches.map(l => `
       <div class="event-item">
         <h4>${l.name}</h4>
         <p><strong>Provider:</strong> ${l.launch_service_provider?.name || "N/A"}</p>
         <p><strong>Launch Window:</strong> ${new Date(l.net).toLocaleString()}</p>
         <p><strong>Location:</strong> ${l.pad?.location?.name || "N/A"}</p>
       </div>
-    ).join("")}
-  ;
+    `).join("")}
+  `;
 }
 
 window.addEventListener("DOMContentLoaded", () => {
