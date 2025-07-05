@@ -67,7 +67,6 @@ npm run build
 - **SpaceDev**- For more launch data
 
 ### Tools
-- **Figma / Penpot** – UI desig
 - **particles.js / SVG.js (optional)** – Starfield effects
 - **Vite / Webpack** – Optional build optimization
 - **Lighthouse / PageSpeed Insights** – Performance testing
