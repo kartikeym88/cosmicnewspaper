@@ -102,79 +102,111 @@
   </div>
 
   <script>
-    async function fetchAllSpaceMilestones() {
-      const selected = localStorage.getItem("cosmic-selected-date") || new Date().toISOString().split("T")[0];
-      const [year, month, day] = selected.split("-");
-      const url = `https://en.wikipedia.org/api/rest_v1/feed/onthisday/events/${month}/${day}`;
+async function fetchAllSpaceMilestones() {
+  const selected = localStorage.getItem("cosmic-selected-date") || new Date().toISOString().split("T")[0];
+  const [year, month, day] = selected.split("-");
+  const url = `https://en.wikipedia.org/api/rest_v1/feed/onthisday/events/${month}/${day}`;
 
+  const textKeywords = [
+    "space", "nasa", "apollo", "moon", "mars", "venus", "astronaut", "cosmonaut", "shuttle",
+    "galileo", "hubble", "rover", "lander", "saturn", "voyager", "new horizons", "pluto",
+    "solar system", "iss", "spacecraft", "launch", "sputnik", "gagarin", "rocket", "orbit",
+    "probe", "cosmos", "telescope", "spacex", "soyuz", "starlink", "mission"
+  ];
+
+  const categoryKeywords = [
+    "space", "apollo", "nasa", "astronomy", "moon", "mars", "planet", "astronaut", "rocket",
+    "shuttle", "cosmonaut", "satellite", "spaceflight", "mission", "exploration", "lunar",
+    "orbiter", "cosmos", "spacex", "iss", "observatory"
+  ];
+
+  const excludeKeywords = [
+    "navy", "ship", "fleet", "submarine", "battle", "war", "military", "revolution", "government",
+    "election", "politician", "death", "murder", "conflict", "soldier", "weapons", "airliner",
+    "music", "film", "pageant", "beauty", "queen", "festival", "actor", "actress", "cinema",
+    "president", "football", "cricket", "soccer", "sports", "race", "olympics"
+  ];
+
+  async function getPageCategories(title) {
+    const url = `https://en.wikipedia.org/w/api.php?action=query&prop=categories&format=json&origin=*&titles=${encodeURIComponent(title)}`;
+    try {
       const res = await fetch(url);
-      const data = await res.json();
+      const json = await res.json();
+      const pages = json.query?.pages;
+      const pg = pages && Object.values(pages)[0];
+      return pg?.categories?.map(c => c.title.replace("Category:", "")) || [];
+    } catch {
+      return [];
+    }
+  }
 
-      const textKeywords = [
-        "space", "nasa", "apollo", "moon", "mars", "venus", "astronaut", "cosmonaut", "shuttle",
-        "galileo", "hubble", "rover", "lander", "saturn", "voyager", "new horizons", "iss", "sputnik",
-        "gagarin", "rocket", "launch", "orbit", "mission"
-      ];
+  const res = await fetch(url);
+  const data = await res.json();
+  const events = data.events;
 
-      const excludeKeywords = [
-        "navy", "ship", "fleet", "submarine", "battle", "war", "military", "revolution", "government",
-        "election", "politician", "death", "murder", "conflict", "soldier", "weapons", "airliner",
-        "music", "film", "pageant", "beauty", "queen", "festival", "actor", "actress", "cinema",
-        "president", "football", "cricket", "soccer", "sports", "race", "olympics"
-      ];
+  const filteredEvents = [];
 
-      const spaceEvents = [];
+  for (const ev of events) {
+    const text = ev.text.toLowerCase();
+    const title = ev.pages?.[0]?.title;
+    const eventYear = ev.year;
 
-      for (const ev of data.events) {
-        const title = ev.pages?.[0]?.title;
-        const eventYear = ev.year;
-        const text = ev.text.toLowerCase();
+    if (!title) continue;
+    const keywordMatchCount = textKeywords.filter(k => text.includes(k)).length;
+    const excludeMatch = excludeKeywords.some(k => text.includes(k));
+    if (excludeMatch || keywordMatchCount < 2) continue;
 
-        const keywordMatch = textKeywords.filter(k => text.includes(k)).length >= 2;
-        const excludeMatch = excludeKeywords.some(k => text.includes(k));
-        if (!keywordMatch || !title || excludeMatch) continue;
+    const categories = await getPageCategories(title);
+    const categoryMatch = categories.some(cat =>
+      categoryKeywords.some(k => cat.toLowerCase().includes(k))
+    );
+    const categoryExclude = categories.some(cat =>
+      excludeKeywords.some(k => cat.toLowerCase().includes(k))
+    );
 
-        const summaryRes = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`);
-        const summary = await summaryRes.json();
+    if (!categoryMatch || categoryExclude) continue;
 
-        spaceEvents.push({
-          title: title.replace(/_/g, ' '),
-          description: summary.extract || ev.text,
-          imageUrl: summary.thumbnail?.source || null,
-          date: `${eventYear}-${month}-${day}`
-        });
-      }
+    const summaryRes = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`);
+    const summary = await summaryRes.json();
 
-      return spaceEvents;
+    filteredEvents.push({
+      title: title.replace(/_/g, ' '),
+      description: summary.extract || ev.text,
+      imageUrl: summary.thumbnail?.source || null,
+      date: `${eventYear}-${month}-${day}`
+    });
+  }
+
+  return filteredEvents;
+}
+
+async function renderEvents() {
+  const container = document.getElementById("events-container");
+  container.innerHTML = "<p>Loading events...</p>";
+
+  try {
+    const events = await fetchAllSpaceMilestones();
+    if (events.length === 0) {
+      container.innerHTML = "<p>No space milestones found for this date.</p>";
+      return;
     }
 
-    async function renderEvents() {
-      const container = document.getElementById("events-container");
-      container.innerHTML = "<p>Loading events...</p>";
+    container.innerHTML = events.map(e => `
+      <div class="event-card">
+        <div class="event-title">${e.title}</div>
+        <div class="event-date">📅 ${e.date}</div>
+        ${e.imageUrl ? `<img src="${e.imageUrl}" class="milestone-image" />` : ""}
+        <div class="milestone-description">${e.description}</div>
+      </div>
+    `).join("");
+  } catch (err) {
+    container.innerHTML = "<p>Failed to load space milestones.</p>";
+    console.error(err);
+  }
+}
 
-      try {
-        const events = await fetchAllSpaceMilestones();
-        if (events.length === 0) {
-          container.innerHTML = "<p>No space milestones found for this date.</p>";
-          return;
-        }
-
-        container.innerHTML = events.map(e => `
-          <div class="event-card">
-            <div class="event-title">${e.title}</div>
-            <div class="event-date">📅 ${e.date}</div>
-            ${e.imageUrl ? `<img src="${e.imageUrl}" class="milestone-image" />` : ""}
-            <div class="milestone-description">${e.description}</div>
-          </div>
-        `).join("");
-      } catch (err) {
-        container.innerHTML = "<p>Failed to load space milestones.</p>";
-        console.error(err);
-      }
-    }
-
-    renderEvents();
-  </script>
+renderEvents();
+</script>
 
 </body>
 </html>
