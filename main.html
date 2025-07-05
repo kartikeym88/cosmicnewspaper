@@ -8,14 +8,6 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
   <link rel="stylesheet" href="style.css" />
   <style>
-    #space-canvas {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100vw;
-      height: 100vh;
-      z-index: -1;
-      background: transparent;
-    }
     .section-nav {
       display: flex;
       justify-content: center;
@@ -52,112 +44,55 @@
         </button>
       </div>
 
-      <!-- New Navigation Menu -->
+      <!-- ✅ Updated Navigation Menu -->
       <div class="section-nav">
         <a href="apod.html" class="nav-link">APOD</a>
-        <a href="launches.html" class="nav-link">Launches</a>
+        <a href="history.html" class="nav-link">History</a>
         <a href="otd.html" class="nav-link">OTD</a>
         <a href="quiz.html" class="nav-link">Quiz</a>
       </div>
     </header>
-    <!-- 🚀 Launch Count Box -->
-<div id="launch-count" class="launch-count-box" style="display: none;">
-  🚀 <span id="launch-number">0</span> launches scheduled today
-</div>
 
+    <!-- 🚀 Launch Count Box -->
+    <div id="launch-count" class="launch-count-box" style="display: none;">
+      🚀 <span id="launch-number">0</span> launches scheduled today
+    </div>
 
     <div class="content">
-  <main class="main-content" id="main-content">
-    <div class="loading" id="loading">
-      <div class="spinner"></div>
-      <p>Scanning the cosmos for today's stories...</p>
+      <main class="main-content" id="main-content">
+        <div class="loading" id="loading">
+          <div class="spinner"></div>
+          <p>Scanning the cosmos for today's stories...</p>
+        </div>
+      </main>
+
+      <aside id="upcoming-launches" class="sidebar-section">
+        <!-- Upcoming launches will appear here -->
+      </aside>
     </div>
-  </main>
-
-  <aside id="upcoming-launches" class="sidebar-section">
-    <!-- Upcoming launches will appear here -->
-  </aside>
-</div>
-
   </div>
 
   <script src="script.js"></script>
-<aside id="upcoming-launches" class="sidebar-section">
-  <!-- Upcoming launches will go here -->
-</aside>
-<script>
-  window.addEventListener("DOMContentLoaded", () => {
-    const dateInput = document.getElementById("date-input");
-    const saved = localStorage.getItem("cosmic-selected-date");
 
-    if (saved) {
-      dateInput.value = saved;
-      fetchCosmicNews();
-    }
+  <aside id="upcoming-launches" class="sidebar-section">
+    <!-- Upcoming launches will go here -->
+  </aside>
 
-    dateInput.addEventListener("change", () => {
-      localStorage.setItem("cosmic-selected-date", dateInput.value);
-      fetchCosmicNews();
+  <script>
+    window.addEventListener("DOMContentLoaded", () => {
+      const dateInput = document.getElementById("date-input");
+      const saved = localStorage.getItem("cosmic-selected-date");
+
+      if (saved) {
+        dateInput.value = saved;
+        fetchCosmicNews();
+      }
+
+      dateInput.addEventListener("change", () => {
+        localStorage.setItem("cosmic-selected-date", dateInput.value);
+        fetchCosmicNews();
+      });
     });
-  });
-  // Starfield animation
-        const canvas = document.getElementById('space-canvas');
-        const ctx = canvas.getContext('2d');
-        let stars = [];
-        let animationId;
-
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-
-        function createStars() {
-            stars = [];
-            const numStars = Math.min(200, Math.floor((canvas.width * canvas.height) / 5000));
-            for (let i = 0; i < numStars; i++) {
-                stars.push({
-                    x: Math.random() * canvas.width,
-                    y: Math.random() * canvas.height,
-                    size: Math.random() * 2 + 0.5,
-                    speed: Math.random() * 0.5 + 0.1,
-                    opacity: Math.random() * 0.8 + 0.2
-                });
-            }
-        }
-
-        function animateStars() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            stars.forEach(star => {
-                star.y += star.speed;
-                if (star.y > canvas.height) {
-                    star.y = -5;
-                    star.x = Math.random() * canvas.width;
-                }
-                ctx.beginPath();
-                ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(255, 255, 255, ${star.opacity})`;
-                ctx.fill();
-            });
-            animationId = requestAnimationFrame(animateStars);
-        }
-
-        function initStarfield() {
-            resizeCanvas();
-            createStars();
-            animateStars();
-        }
-
-        // Initialize starfield on DOM ready
-        document.addEventListener("DOMContentLoaded", () => {
-            initStarfield();
-        });
-
-        // Handle window resize
-        window.addEventListener('resize', () => {
-            resizeCanvas();
-            createStars();
-        });
-</script>
-
+  </script>
 </body>
 </html>

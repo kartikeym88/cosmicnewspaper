@@ -18,7 +18,6 @@ async function fetchCosmicNews() {
   let upcomingLaunches = [];
   let pastLaunches = [];
 
-
   try {
     apod = await fetchAPOD(date);
   } catch (err) {
@@ -36,26 +35,22 @@ async function fetchCosmicNews() {
   } catch (err) {
     console.error("SpaceDevs upcoming error:", err);
   }
-   try {
+
+  try {
     pastLaunches = await fetchPastLaunches(date);
   } catch (err) {
     console.error("Past launches error:", err);
   }
 
-
-
   renderAll(apod, pastLaunches, spaceMilestones, upcomingLaunches, date);
 }
+
 async function fetchPastLaunches(date) {
   const res = await fetch("launch_history.json");
   if (!res.ok) throw new Error("Could not load launch history data.");
   const data = await res.json();
 
-  // Extract MM-DD
   const [, month, day] = date.split("-");
-  const dateKey = `${month}-${day}`;
-
-  // Collect all launches matching this MM-DD across years
   const launches = [];
 
   for (const [fullDate, entries] of Object.entries(data)) {
@@ -67,8 +62,6 @@ async function fetchPastLaunches(date) {
 
   return launches;
 }
-
-
 
 async function fetchAPOD(date) {
   const key = `apod-${date}`;
@@ -100,7 +93,7 @@ async function fetchUpcomingLaunches() {
 
   const filtered = data.results.filter(l => {
     const launchDate = new Date(l.net);
-    return launchDate >= nowDate && launchDate <= endDate;
+    return launchDate > nowDate && launchDate <= endDate;
   });
 
   localStorage.setItem(key, JSON.stringify(filtered));
@@ -160,7 +153,6 @@ async function fetchWikipediaSpaceMilestones(date) {
   }
 
   const url = `https://en.wikipedia.org/api/rest_v1/feed/onthisday/events/${month}/${day}`;
-
   const res = await fetch(url);
   if (!res.ok) throw new Error("Failed to fetch Wikipedia events.");
   const json = await res.json();
@@ -198,16 +190,7 @@ async function fetchWikipediaSpaceMilestones(date) {
   return spaceEvents;
 }
 
-function toggleReadMore(btn) {
-  const moreText = btn.previousElementSibling;
-  if (moreText.style.display === "block") {
-    moreText.style.display = "none";
-    btn.textContent = "Read more";
-  } else {
-    moreText.style.display = "block";
-    btn.textContent = "Show less";
-  }
-}
+// function toggleReadMore(btn) {}
 
 function renderAll(apod, launches, wikiEvents, upcomingLaunches, date) {
   const main = document.getElementById("main-content");
@@ -217,76 +200,76 @@ function renderAll(apod, launches, wikiEvents, upcomingLaunches, date) {
     year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit"
   });
 
-const launchHTML = launches.length > 0
-  ? launches.map(l => `
-    <div class="event-item">
-      <h4>🚀 ${l.name}</h4>
-      ${l.image_url ? `<img src="${l.image_url}" alt="${l.name}" style="width:100%; max-height:200px; object-fit:cover; border-radius:8px; margin:10px 0;">` : ""}
-      <p><strong>Provider:</strong> ${l.provider}</p>
-      <p><strong>Window:</strong> ${new Date(l.window_start).toLocaleString()}</p>
-      <p><strong>Location:</strong> ${l.location}</p>
-      <p>${l.description}</p>
+  const apodSection = apod ? `
+    <div class="headline-section">
+      <h2 class="headline">Astronomy Picture of the Day</h2>
+      <img src="${apod.url}" class="apod-image">
+      <p class="byline">${apod.title || "No title"}</p>
+      <a href="apod.html" class="read-more-btn">Know more</a>
     </div>
-  `).join("")
-  : "<p>No rocket launches recorded for this date.</p>";
-
+  ` : "";
 
   const milestoneHTML = wikiEvents.length > 0 ? wikiEvents.map((e, i) => `
     <div class="event-item">
       <h4>📜 ${e.label}</h4>
       <p><strong>Type:</strong> ${e.type}</p>
       <p><strong>Date:</strong> ${format(e.date)}</p>
-      <div id="desc-${i}" style="display:none; margin-top: 8px;">${e.description}</div>
-      <button onclick="toggleReadMore(this)" style="margin-top:8px;">Read more</button>
+      <a href="history.html?event=${encodeURIComponent(e.label)}" class="read-more-btn">Read more</a>
     </div>
-  `).join("") : "<p>No major space discoveries or milestones found for this date.</p>";
-
-  const upcomingHTML = upcomingLaunches.length > 0 ? upcomingLaunches.map(l => `
-    <div class="event-item">
-      <h4>🚀 ${l.name}</h4>
-      <p><strong>Provider:</strong> ${l.launch_service_provider?.name || "Unknown"}</p>
-      <p><strong>Window:</strong> ${format(l.window_start)}</p>
-      ${l.mission?.description ? `<p>${l.mission.description.slice(0, 120)}...</p>` : ""}
-    </div>
-  `).join("") : "<p>No upcoming launches found or API is unavailable.</p>";
+  `).join("") : "<p>No space milestones for this date.</p>";
 
   main.innerHTML = `
-    <div class="main-content">
-      <article class="headline-section">
-        ${apod && apod.media_type === "image"
-          ? `<div class="image-container">
-              <img src="${apod.url}" alt="${apod.title}" class="apod-image" style="opacity:1;" />
-            </div>`
-          : apod && apod.media_type === "video"
-          ? `<div class="apod-image" style="display:flex;justify-content:center;align-items:center;background:#222;color:#fff;height:300px;">
-              Video: <a href="${apod.url}" target="_blank" style="color:#00eaff; margin-left:10px;">View Video</a>
-            </div>`
-          : `<p style="color:#aaa;">APOD unavailable</p>`}
-        <h2 class="headline">Astronomy Picture of the Day</h2>
-        <p style="margin-top: 10px;">
-          <a href="apod.html" onclick="localStorage.setItem('cosmic-selected-date', '${date}')" style="color:#00eaff; font-weight: bold; text-decoration: underline;">
+    ${apodSection}
 
-            Click to know more →
-          </a>
-        </p>
-      </article>
+    <div class="event-section">
+      <h3 class="section-title">🚀 Launch History</h3>
+      ${launches.map(l => `
+        <div class="event-item">
+          <h4>🚀 ${l.name}</h4>
+          <p><strong>Provider:</strong> ${l.provider}</p>
+          <p><strong>Window:</strong> ${new Date(l.window_start).toLocaleString()}</p>
+          <p><strong>Location:</strong> ${l.location}</p>
+          <p>${l.description}</p>
+        </div>
+      `).join("")}
+    </div>
 
-      <section class="event-section">
-        <h3 class="section-title">🚀 Rocket Launches (Archived Placeholder)</h3>
-        ${launchHTML}
-      </section>
-
-      <section class="event-section">
-        <h3 class="section-title">📜 Space Discoveries & Milestones</h3>
-        ${milestoneHTML}
-      </section>
+    <div class="event-section">
+      <h3 class="section-title">📜 Space Discoveries & Milestones</h3>
+      ${milestoneHTML}
     </div>
   `;
 
-  if (upcomingDiv) {
-    upcomingDiv.innerHTML = `
-      <h3 class="section-title">🛰️ Upcoming Launches (Next 10 Days)</h3>
-      ${upcomingHTML}
-    `;
-  }
+  upcomingDiv.innerHTML = `
+    <h3 class="section-title">Upcoming Launches</h3>
+    ${upcomingLaunches.map(l => `
+      <div class="event-item">
+        <h4>${l.name}</h4>
+        <p><strong>Provider:</strong> ${l.launch_service_provider?.name || "N/A"}</p>
+        <p><strong>Launch Window:</strong> ${new Date(l.net).toLocaleString()}</p>
+        <p><strong>Location:</strong> ${l.pad?.location?.name || "N/A"}</p>
+      </div>
+    `).join("")}
+  `;
 }
+
+window.addEventListener("DOMContentLoaded", () => {
+  const dateInput = document.getElementById("date-input");
+  const saved = localStorage.getItem("cosmic-selected-date");
+
+  setInterval(() => {
+    localStorage.removeItem("upcoming-launches");
+    localStorage.removeItem("upcoming-launches-time");
+    fetchCosmicNews();
+  }, 30 * 60 * 1000); // Refresh every 30 mins
+
+  if (saved) {
+    dateInput.value = saved;
+    fetchCosmicNews();
+  }
+
+  dateInput.addEventListener("change", () => {
+    localStorage.setItem("cosmic-selected-date", dateInput.value);
+    fetchCosmicNews();
+  });
+});

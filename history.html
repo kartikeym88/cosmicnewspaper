@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Space Milestones</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      background-color: #0a0f1d;
+      font-family: 'Orbitron', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: #e0e6f0;
+      margin: 0;
+      padding: 0;
+    }
+
+    .milestone-section {
+      max-width: 900px;
+      margin: 60px auto;
+      padding: 20px;
+      animation: fadeIn 0.4s ease;
+    }
+
+    .page-heading {
+      text-align: center;
+      font-size: 2.8em;
+      color: #00eaff;
+      text-shadow: 0 0 12px #00eaff;
+      margin-bottom: 50px;
+    }
+
+    .event-card {
+      background-color: #111730;
+      border-radius: 12px;
+      padding: 25px;
+      margin-bottom: 30px;
+      box-shadow: 0 0 15px rgba(0, 234, 255, 0.1);
+    }
+
+    .event-title {
+      font-size: 1.6em;
+      color: #00eaff;
+      text-shadow: 0 0 8px #00eaff;
+      margin-bottom: 8px;
+    }
+
+    .event-date {
+      color: #ccc;
+      margin-bottom: 12px;
+    }
+
+    .milestone-image {
+      display: block;
+      margin: 15px auto;
+      max-width: 100%;
+      border-radius: 10px;
+      box-shadow: 0 0 12px rgba(0, 234, 255, 0.2);
+    }
+
+    .milestone-description {
+      font-size: 1.05em;
+      line-height: 1.6;
+      text-align: justify;
+      margin-top: 10px;
+    }
+
+    .back-link {
+      text-align: left;
+      margin-top: 60px;
+    }
+
+    .back-link a {
+      font-family: 'Orbitron', sans-serif;
+      color: #00eaff;
+      font-weight: bold;
+      font-size: 1.1em;
+      text-decoration: underline;
+      text-shadow: 0 0 8px #00eaff;
+      transition: text-shadow 0.3s ease;
+    }
+
+    .back-link a:hover {
+      text-shadow: 0 0 16px #00eaff, 0 0 30px #00eaff;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="milestone-section">
+    <h1 class="page-heading">🚀 Space Milestones for Today</h1>
+    <div id="events-container">Loading...</div>
+
+    <div class="back-link">
+      <a href="main.html">← Back to Main Page</a>
+    </div>
+  </div>
+
+  <script>
+    async function fetchAllSpaceMilestones() {
+      const today = new Date();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
+      const url = `https://en.wikipedia.org/api/rest_v1/feed/onthisday/events/${month}/${day}`;
+
+      const res = await fetch(url);
+      const data = await res.json();
+
+      const keywords = [
+        "space", "nasa", "apollo", "moon", "mars", "venus", "astronaut", "cosmonaut", "shuttle",
+        "galileo", "hubble", "rover", "lander", "saturn", "voyager", "new horizons", "iss", "sputnik",
+        "gagarin", "rocket", "launch", "orbit", "mission"
+      ];
+
+      const spaceEvents = [];
+
+      for (const ev of data.events) {
+        const title = ev.pages?.[0]?.title;
+        const year = ev.year;
+        const text = ev.text.toLowerCase();
+        const isSpace = keywords.some(k => text.includes(k));
+        if (!isSpace || !title) continue;
+
+        const summaryRes = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`);
+        const summary = await summaryRes.json();
+
+        spaceEvents.push({
+          title: title.replace(/_/g, ' '),
+          description: summary.extract || ev.text,
+          imageUrl: summary.thumbnail?.source || null,
+          date: `${year}-${month}-${day}`
+        });
+      }
+
+      return spaceEvents;
+    }
+
+    async function renderEvents() {
+      const container = document.getElementById("events-container");
+      container.innerHTML = "<p>Loading events...</p>";
+
+      try {
+        const events = await fetchAllSpaceMilestones();
+        if (events.length === 0) {
+          container.innerHTML = "<p>No space milestones found for today.</p>";
+          return;
+        }
+
+        container.innerHTML = events.map(e => `
+          <div class="event-card">
+            <div class="event-title">${e.title}</div>
+            <div class="event-date">📅 ${e.date}</div>
+            ${e.imageUrl ? `<img src="${e.imageUrl}" class="milestone-image" />` : ""}
+            <div class="milestone-description">${e.description}</div>
+          </div>
+        `).join("");
+      } catch (err) {
+        container.innerHTML = "<p>Failed to load space milestones.</p>";
+        console.error(err);
+      }
+    }
+
+    renderEvents();
+  </script>
+
+</body>
+</html>
